@@ -1,4 +1,5 @@
 #include "ppu.h"
+#include "../utility/utilityFunctions.h"
 #include "../ppuBus.h"
 #include "ppuDebug.h"
 #include <algorithm>
@@ -15,6 +16,8 @@ PPU::PPU(PpuBus* ppuBus) : mp_ppuBus(ppuBus), mp_frameBuffer(nullptr) {
 void PPU::reset() {
     // Reset OAM memory
     std::fill(m_OAM, m_OAM + sizeof(m_OAM), 0x00);
+
+    m_oddFrame = true;
 
     // Reset the rendering and address register
     m_wLatch = false;
@@ -33,6 +36,8 @@ void PPU::reset() {
     m_ppuCycles = 0;
     m_scanCycle = 0;
     m_scanLine = 0;
+
+    m_busLatch = 0;
 }
 
 // Get debug info
@@ -147,7 +152,7 @@ void PPU::writeRegister(uint16_t addr, uint8_t data) {
                 m_ppuAddrTmp = (m_ppuAddrTmp & 0xFFE0) | (static_cast<uint16_t>(data) >> 3);
             } else {
                 m_ppuAddrTmp = (m_ppuAddrTmp & 0x8FFF) | (static_cast<uint16_t>(data) << 12);
-                m_ppuAddrTmp = (m_ppuAddrTmp & 0xFE0F) | (static_cast<uint16_t>(data & 0x07) << 2);
+                m_ppuAddrTmp = (m_ppuAddrTmp & 0xFC1F) | (static_cast<uint16_t>(data & 0x07) << 2);
             }
 
             m_wLatch = !m_wLatch;
@@ -187,90 +192,133 @@ void PPU::writeRegister(uint16_t addr, uint8_t data) {
     }
 }
 
+// Increments functions
+inline void PPU::coarseIncX() {
+    if ((m_ppuAddrCurrent & 0x001F) == 31) {
+        m_ppuAddrCurrent &= ~0x001F;
+        m_ppuAddrCurrent ^= 0x0400;
+    } else {
+        m_ppuAddrCurrent++;
+    }
+}
+inline void PPU::coarseIncY() {
+if ((m_ppuAddrCurrent & 0x7000) != 0x7000) {
+        m_ppuAddrCurrent += 0x1000;
+    } else {
+        m_ppuAddrCurrent &= ~0x7000;
+
+        uint16_t y = (m_ppuAddrCurrent & 0x03E0) >> 5;
+        if (y == 29) {
+            y = 0;
+            m_ppuAddrCurrent ^= 0x0800;
+        } else if (y == 31)
+            y = 0;
+        else
+            y += 1;  
+
+        m_ppuAddrCurrent = (m_ppuAddrCurrent & ~0x03E0) | (y << 5);
+    }
+}
+
+inline void PPU::coarseResetX() {
+    m_ppuAddrCurrent = (m_ppuAddrCurrent & 0x7BE0) | (m_ppuAddrTmp & 0x41F);
+
+}
+inline void PPU::coarseResetY() {       
+    m_ppuAddrCurrent = (m_ppuAddrCurrent & 0x041F) | (m_ppuAddrTmp & 0x7BE0);
+}
+
 // PPU processing 
-Interrupt6502 PPU::clock(uint16_t cpuCycle) {
+Interrupt6502 PPU::clock(size_t cpuCycle) {
     uint16_t ppuCycle = cpuCycle * 3;
     Interrupt6502 outputInterrupt = NOINT;
 
     for (uint16_t i = 0; i < ppuCycle; i++) {
+        // Pre-rendering scan line
+        if (m_scanLine == 261) {
+            // Clear flags
+            if (m_scanCycle == 1)
+                m_ppuStatus = 0x00;
+        }
+
         // Check if rendering is enable
         if (m_ppuMask & (MASK_SHOW_SPR | MASK_SHOW_BRG)) {
-            if (m_scanLine < 240 && m_scanCycle < 256) {
-                uint8_t tile = mp_ppuBus->read(0x2000 | (m_ppuAddrCurrent & 0x0FFF));
-                uint16_t tileAddr = (m_ppuAddrCurrent >> 12) | static_cast<uint16_t>(tile) << 4;
-                tileAddr |= ((m_ppuCtrl & CTRL_BRG_PATTERN) != 0) << 12;
-
-                uint8_t lowByte = mp_ppuBus->read(tileAddr);
-                uint8_t highByte = mp_ppuBus->read(tileAddr + 8);
-
-                uint8_t pixel = ((lowByte >> (7 - m_xFineScrolling)) & 0x01) | ((highByte >> (7 - m_xFineScrolling)) & 0x01) << 1;
-
-                mp_frameBuffer->setPixel(m_scanCycle, m_scanLine, pixel);
-
-                // Increment fine scroll X
-                m_xFineScrolling++;
-                if (m_xFineScrolling > 7) {
-                    m_xFineScrolling = 0;
-
-                    if ((m_ppuAddrCurrent & 0x001F) == 31) {
-                        m_ppuAddrCurrent &= ~0x001F;
-                        m_ppuAddrCurrent ^= 0x0400;
-                    } else {
-                        m_ppuAddrCurrent++;
-                    }
-                }
-            }  
-
-            // Copy address register horizontal components and Increment fine Y scrolling
-            else if (m_scanCycle == 257) {
-                m_ppuAddrCurrent = (m_ppuAddrCurrent & 0x7BE0) | (m_ppuAddrTmp & 0x841F);
-                
-                if ((m_ppuAddrCurrent & 0x7000) != 0x7000) {
-                    m_ppuAddrCurrent += 0x1000;
-                } else {
-                    m_ppuAddrCurrent &= ~0x7000;
-
-                    uint16_t y = (m_ppuAddrCurrent & 0x03E0) >> 5;
-                    if (y == 29) {
-                        y = 0;
-                        m_ppuAddrCurrent ^= 0x0800;
-                    } else if (y == 31)
-                        y = 0;
-                    else
-                        y += 1;  
-
-                    m_ppuAddrCurrent = (m_ppuAddrCurrent & ~0x03E0) | (y << 5);
+            // Pre-rendering scan line
+            if (m_scanLine == 261) {
+                // Skip one tick on odd frames
+                if (m_oddFrame && m_scanCycle == 339) {
+                    m_scanCycle = 0; m_scanLine = 0; continue;
                 }
             }
-    
-            // Pre-rendering scan line 
-            else if (m_scanLine == 260) {
-                // Clear vblack flag
-                if (m_scanCycle == 1)
-                    m_ppuStatus &= ~STATUS_VBLACK;
-                // Copy address register vertical components
-                else if (m_scanCycle == 304)
-                    m_ppuAddrCurrent = (m_ppuAddrCurrent & 0x841F) | (m_ppuAddrTmp & 0x7BE0);
-            } 
-        }
 
-        // Set the vblack flag
+            // Rendering scan lines
+            if (m_scanLine < 240 && m_scanCycle > 0 && m_scanCycle < 257) {
+
+                uint8_t pixel = (((m_backgroundShiftL << m_xFineScrolling) & 0x8000) >> 15) | (((m_backgroundShiftH << m_xFineScrolling) & 0x8000) >> 14);
+                uint8_t color = mp_ppuBus->read(0x3F00 + pixel);
+
+                // Update pixel color
+                mp_frameBuffer->setPixel(m_scanCycle - 1, m_scanLine, color);
+            }
+
+            if (m_scanLine < 240 || m_scanLine == 261) {
+                if ((m_scanCycle > 0 && m_scanCycle < 257) || (m_scanCycle > 320 && m_scanCycle < 337)) {
+                    m_backgroundShiftH <<= 1;
+                    m_backgroundShiftL <<= 1;
+                }
+            }
+
+            // Address register Increment and updates
+            if (m_scanLine < 240 || m_scanLine == 261) {
+                // Increment X 
+                if ((m_scanCycle % 8 == 0) && ((m_scanCycle > 0 && m_scanCycle < 257) || (m_scanCycle > 320 && m_scanCycle < 337))) {
+                    uint8_t tile = mp_ppuBus->read(0x2000 | (m_ppuAddrCurrent & 0x0FFF));
+                    uint16_t tileAddr = (m_ppuAddrCurrent >> 12) | static_cast<uint16_t>(tile) << 4;
+                    tileAddr |= ((m_ppuCtrl & CTRL_BRG_PATTERN) != 0) << 12;
+
+                    m_backgroundShiftH = (m_backgroundShiftH & 0xFF00) | (mp_ppuBus->read(tileAddr + 8));
+                    m_backgroundShiftL = (m_backgroundShiftL & 0xFF00) | (mp_ppuBus->read(tileAddr));
+
+                    coarseIncX();
+                }
+
+                // Increment Y
+                if (m_scanCycle == 256) {
+                    coarseIncY();
+                }
+
+                // Copy address register horizontal components and Increment fine Y scrolling
+                if (m_scanCycle == 257) 
+                    coarseResetX();
+
+                // Copy address register vertical components
+                if (m_scanLine == 261 && m_scanCycle >= 280 && m_scanCycle <= 304)
+                    coarseResetY();
+            }
+
+         } // Rendering enable
+
+        // Post rendering scan line
         if (m_scanLine == 241 && m_scanCycle == 1) {
-            m_vblank = true;
-            outputInterrupt = NMI;
+            m_vblankStart = true;
+
+            if ((m_ppuCtrl & CTRL_VBLANK_NMI) != 0)
+                outputInterrupt = NMI;
+
             m_ppuStatus |= STATUS_VBLACK;
-        }
-        
+        } 
+
         // Increment scan cycle and scan line
         m_scanCycle += 1;
-        if (m_scanCycle >= 340) {
+        if (m_scanCycle >= 341) {
             m_scanLine += 1;
             m_scanCycle = 0;
 
-            if (m_scanLine >= 261)
+            if (m_scanLine >= 262)
                 m_scanLine = 0;
         }
 
+        m_oddFrame = !m_oddFrame;
 
         // int y = ((m_ppuAddrCurrent >> 2) & 0x00F8) | (m_ppuAddrCurrent >> 12);
         // int x = ((m_ppuAddrCurrent & 0x001F) << 3) | m_xFineScrolling;
@@ -288,8 +336,8 @@ Interrupt6502 PPU::clock(uint16_t cpuCycle) {
 }
 
 bool PPU::frameReady() {
-    bool vblanck = m_vblank;
-    m_vblank = false;
+    bool vblanck = m_vblankStart;
+    m_vblankStart = false;
 
     return vblanck;
 }

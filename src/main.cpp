@@ -1,8 +1,8 @@
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_video.h>
-#include <iostream>
 #include <SDL2/SDL.h>
+#include <iostream>
 
 #include "nesCore/inputOutput/IOInterface.h"
 #include "nesCore/nesEmulator.h"
@@ -27,10 +27,13 @@ int main (int argc, char *argv[]) {
     input::Sdl2Input sdlGamepad;
 
     nesCore::NesEmulator emulator = nesCore::NesEmulator();
+    emulator.loadPalette("palettes/2C02G.pal");
     
-    emulator.loadCartridge("roms/Zelda.NES");
-    emulator.loadCartridge("roms/DonkeyKong.nes");
-    emulator.loadCartridge("roms/nestest.nes");
+    emulator.loadCartridge("roms/scroll.nes");
+    //emulator.loadCartridge("roms/Zelda.NES");
+    //emulator.loadCartridge("roms/DonkeyKong.nes");
+    //emulator.loadCartridge("roms/nestest.nes");
+    //emulator.loadCartridge("roms/helloworld.nes");
 
     emulator.attachIO(&sdlGamepad);
     display.attackFrameBuffer(emulator.getFrameBuffer());
@@ -44,11 +47,11 @@ int main (int argc, char *argv[]) {
         while (!emulator.frameReady() && emulate) {
             emulator.step();
 
-            if (true) {
+            if (false) {
                 nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
                 nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
 
-                if (true || (info.cpuCycle >= 100000 && info.cpuCycle <= 101000)) {
+                if (true || (info.cpuCycle >= 000 && info.cpuCycle <= 2000)) {
                     std::cout << info.log() << " -- ";
                     std::cout << emulator.decompileInstruction(info.pc) << std::endl;
                 }
@@ -76,13 +79,38 @@ int main (int argc, char *argv[]) {
             }
 
             if ( event.type == SDL_KEYDOWN ) {
-                if ( event.key.keysym.sym == SDLK_p)
+                if (event.key.keysym.sym == SDLK_p)
                     emulate = !emulate;
+
+                // Run one emulator step
+                if (event.key.keysym.sym == SDLK_t && !emulate) {
+                    emulator.step();
+
+                    nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
+                    nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
+
+                    std::cout << info.log() << " -- ";
+                    std::cout << emulator.decompileInstruction(info.pc) << std::endl;
+                }
+                // Render one frame
+                if (event.key.keysym.sym == SDLK_f && !emulate) {
+                     while (!emulator.frameReady()) {
+                        emulator.step();
+
+                        nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
+                        nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
+
+                        std::cout << info.log() << " -- ";
+                        std::cout << emulator.decompileInstruction(info.pc) << std::endl;
+                        
+                        std::cout << emulator.formatBusRange(0x0000, 0x07, 8) << std::endl;
+                     }
+                }
             }
         }
     }
 
-    std::cout << emulator.formatBusRange(0x0200, 0x020F, 5) << std::endl;
+    std::cout << emulator.formatBusRange(0x0100, 0x01F0, 8) << std::endl;
 
     display.quit();
     SDL_Quit();

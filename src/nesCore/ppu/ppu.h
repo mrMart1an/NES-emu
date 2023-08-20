@@ -5,6 +5,7 @@
 #include "../frameBuffer.h"
 #include "../cpu/cpu6502.h"
 
+#include <cstddef>
 #include <iostream>
 #include <cstdint>
 
@@ -47,7 +48,7 @@ public:
     debug::PPUDebug getDebugInfo();
 
     // Run PPU process
-    Interrupt6502 clock(uint16_t cpuCycle);
+    Interrupt6502 clock(size_t cpuCycle);
 
     // Attach a frame buffer to the PPU
     void attachFrameBuffer(FrameBuffer* buffer);
@@ -58,8 +59,14 @@ public:
 
     bool frameReady();
 
-// Public member variable
-public:
+// Private methods
+private:
+    inline void coarseIncX();
+    inline void coarseIncY();
+
+    inline void coarseResetX();
+    inline void coarseResetY();
+
 // Private member variable
 private:
     uint64_t m_ppuCycles;
@@ -68,7 +75,7 @@ private:
     uint16_t m_scanCycle;
 
     // Flag used to inform the emulator of vblank
-    bool m_vblank;
+    bool m_vblankStart;
 
     uint8_t m_OAM[256];
 
@@ -79,10 +86,15 @@ private:
     FrameBuffer* mp_frameBuffer;
 
     // Rendering and address registers
+    uint16_t m_backgroundShiftH;
+    uint16_t m_backgroundShiftL;
+
     uint16_t m_ppuAddrTmp;
     uint16_t m_ppuAddrCurrent;
 
     uint8_t m_xFineScrolling;
+
+    bool m_oddFrame;
 
     // PPU registers
     uint8_t m_ppuCtrl;

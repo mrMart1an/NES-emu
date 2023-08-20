@@ -673,6 +673,7 @@ void Cpu6502::LAX(uint16_t addr) {
     m_regX = value;
 
     // Update status registers
+    // WRONG
     m_zeroFlag = value == 0x00;
     m_negativeFlag = (value & 0b10000000) != 0;
 }

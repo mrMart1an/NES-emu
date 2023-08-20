@@ -129,6 +129,14 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     m_ppuBus.ppu.reset();
 }
 
+bool NesEmulator::frameReady() {
+    return m_ppuBus.ppu.frameReady();
+}
+// Load the color palette from file
+void NesEmulator::loadPalette(const std::string& filename) {
+    m_frameBuffer.loadPalette(filename);
+}
+
 /*
  *
  *  Debug functions
@@ -151,9 +159,5 @@ debug::Cpu6502Debug NesEmulator::cpuDebugInfo() {
 // return PPU debug info
 debug::PPUDebug NesEmulator::ppuDebugInfo() {
     return m_ppuBus.ppu.getDebugInfo();
-}
-
-bool NesEmulator::frameReady() {
-    return m_ppuBus.ppu.frameReady();
 }
 }
