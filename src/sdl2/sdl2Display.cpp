@@ -33,6 +33,8 @@ int Sdl2Display::init() {
                                   SDL_TEXTUREACCESS_STREAMING, 
                                   nesCore::SCREEN_WIDTH, 
                                   nesCore::SCREEN_HEIGHT);
+    
+    SDL_RenderSetVSync(mp_renderer, 1);
 
     // Initialized the texture rect
     this->resize();

@@ -12,12 +12,26 @@ void Sdl2Input::updateInput(SDL_Event* event) {
 
     if (event->type == SDL_KEYDOWN || event->type == SDL_KEYUP) {
         switch (event->key.keysym.sym) {
+            case SDLK_z:
+                m_tmpInput = (m_tmpInput & ~GP_A) | (GP_A * keyStatus);
+                break;
+            case SDLK_x:
+                m_tmpInput = (m_tmpInput & ~GP_B) | (GP_B * keyStatus);
+                break;
+
             case SDLK_w: case SDLK_UP:
                 m_tmpInput = (m_tmpInput & ~GP_UP) | (GP_UP * keyStatus);
                 break;
             case SDLK_s: case SDLK_DOWN:
                 m_tmpInput = (m_tmpInput & ~GP_DOWN) | (GP_DOWN * keyStatus);
                 break;
+            case SDLK_a: case SDLK_LEFT:
+                m_tmpInput = (m_tmpInput & ~GP_LEFT) | (GP_LEFT * keyStatus);
+                break;
+            case SDLK_d: case SDLK_RIGHT:
+                m_tmpInput = (m_tmpInput & ~GP_RIGHT) | (GP_RIGHT * keyStatus);
+                break;
+
             case SDLK_RETURN:
                 m_tmpInput = (m_tmpInput & ~GP_START) | (GP_START * keyStatus);
                 break;

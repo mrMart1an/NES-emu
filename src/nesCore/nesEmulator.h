@@ -10,6 +10,7 @@
 #include "ppu/ppuDebug.h"
 #include "ppuBus.h"
 #include <cstdint>
+#include <string>
 
 namespace nesCore {
 class NesEmulator {
@@ -25,6 +26,9 @@ public:
     void loadCartridge(const std::string& filename);
     // Attach an IO interface to the emulator
     void attachIO(IOInterface* interface);
+
+    // Load the color palette from file
+    void loadPalette(const std::string& filename);
 
     // Execute one CPU instruction
     void step();

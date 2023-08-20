@@ -12,7 +12,7 @@ Cpu6502::Cpu6502(Bus* bus) : m_bus(bus) {};
 // Reset all the CPU register
 void Cpu6502::reset() {
     // Reset the cycle counter
-    m_cpuCycle = 7;
+    m_cpuCycle = 8;
 
     // Reset general purpose registers
     m_regX = 0;
@@ -122,7 +122,7 @@ void Cpu6502::executeInterrupt(Interrupt6502 interrupt) {
 }
 
 // Execute an instruction and return the number of cycle required
-uint8_t Cpu6502::executeInstruction(Interrupt6502 interrupt) {
+size_t Cpu6502::executeInstruction(Interrupt6502 interrupt) {
     uint64_t startCycles = m_cpuCycle;
 
     // Poll the interrupt for the next instruction
@@ -133,6 +133,9 @@ uint8_t Cpu6502::executeInstruction(Interrupt6502 interrupt) {
     // Read OP code from the buffer and increment the program counter
     uint8_t opCode = m_bus->read(m_pc);
     m_pc++;
+
+    //if (m_bus->read16(m_pc, true) == 0x4014)
+    //     m_cpuCycle += 514;
 
     // Execute instruction
     switch (opCode) {
@@ -750,6 +753,7 @@ uint16_t Cpu6502::getIndirectAddr() {
     m_pc += 2;
 
     return m_bus->read16PageWrap(address);
+    //return m_bus->read16(address);
 }
 uint16_t Cpu6502::getIndexedIndirectAddr() {
     // Get address and update program counter
@@ -763,7 +767,7 @@ uint16_t Cpu6502::getIndirectIndexedAddr(bool pageCrossAddCycle) {
     // Get address and update program counter
     uint16_t address = static_cast<uint16_t>(m_bus->read(m_pc));
     address = m_bus->read16PageWrap(address);
-        m_pc++;
+    m_pc++;
 
     // Branch less page crossing check 
     bool pageCross = (((address & 0x00FF) + m_regY) & 0xFF00) != 0;
