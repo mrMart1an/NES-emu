@@ -15,7 +15,7 @@ namespace display {
 Sdl2Display::Sdl2Display()
     : mp_frameBuffer(nullptr), mp_window(nullptr), mp_renderer(nullptr), mp_texture(nullptr) {}
 
-int Sdl2Display::init() {
+int Sdl2Display::init(bool hideDangerZone) {
     mp_window = SDL_CreateWindow("SDL2 Window",
                                 SDL_WINDOWPOS_CENTERED,
                                 SDL_WINDOWPOS_CENTERED,
@@ -36,8 +36,13 @@ int Sdl2Display::init() {
     
     SDL_RenderSetVSync(mp_renderer, 1);
 
-    // Initialized the texture rect
+    // Initialized the destination and source rects
     this->resize();
+
+    m_srcRect.w = nesCore::SCREEN_WIDTH;
+    m_srcRect.x = 0;
+    m_srcRect.y = hideDangerZone ? 8 : 0;
+    m_srcRect.h = hideDangerZone ? nesCore::SCREEN_HEIGHT - 16 : nesCore::SCREEN_HEIGHT;
 
     return 0;
 }
@@ -51,7 +56,7 @@ void Sdl2Display::resize() {
     int w, h;
     SDL_GetWindowSize(mp_window, &w, &h);
 
-    float aspectRatio = (float)nesCore::SCREEN_WIDTH / (float)nesCore::SCREEN_HEIGHT;
+    float aspectRatio = (float)m_srcRect.w / (float)m_srcRect.h;
 
     // Calculate the width, height and position
     int width = w;
@@ -70,8 +75,8 @@ void Sdl2Display::resize() {
     }
 
     // Set the texture rect
-    m_textureRect.x = posX; m_textureRect.y = posY; 
-    m_textureRect.w = width; m_textureRect.h = height; 
+    m_destRect.x = posX; m_destRect.y = posY; 
+    m_destRect.w = width; m_destRect.h = height; 
 }
 
 void Sdl2Display::update() { 	
@@ -81,7 +86,7 @@ void Sdl2Display::update() {
         SDL_UpdateTexture(mp_texture, NULL, mp_frameBuffer, nesCore::SCREEN_WIDTH * sizeof(uint32_t));
     
     SDL_RenderClear(mp_renderer);
-    SDL_RenderCopy(mp_renderer, mp_texture, NULL, &m_textureRect);
+    SDL_RenderCopy(mp_renderer, mp_texture, &m_srcRect, &m_destRect);
     SDL_RenderPresent(mp_renderer);
 }
 
