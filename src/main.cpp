@@ -29,8 +29,8 @@ int main (int argc, char *argv[]) {
     nesCore::NesEmulator emulator = nesCore::NesEmulator();
     emulator.loadPalette("palettes/2C02G.pal");
     
-    emulator.loadCartridge("roms/scroll.nes");
-    //emulator.loadCartridge("roms/Zelda.NES");
+    //emulator.loadCartridge("roms/horizscroll.nes");
+    emulator.loadCartridge("roms/Zelda.NES");
     //emulator.loadCartridge("roms/DonkeyKong.nes");
     //emulator.loadCartridge("roms/nestest.nes");
     //emulator.loadCartridge("roms/helloworld.nes");
@@ -39,7 +39,7 @@ int main (int argc, char *argv[]) {
     display.attackFrameBuffer(emulator.getFrameBuffer());
 
     bool quit = false;
-    bool emulate = true;
+    bool emulate = false;
     SDL_Event event;
 
     while (!quit) {
@@ -100,17 +100,15 @@ int main (int argc, char *argv[]) {
                         nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
                         nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
 
-                        std::cout << info.log() << " -- ";
-                        std::cout << emulator.decompileInstruction(info.pc) << std::endl;
-                        
-                        std::cout << emulator.formatBusRange(0x0000, 0x07, 8) << std::endl;
+                        //std::cout << info.log() << " -- ";
+                        //std::cout << emulator.decompileInstruction(info.pc) << std::endl;
                      }
                 }
             }
         }
     }
 
-    std::cout << emulator.formatBusRange(0x0100, 0x01F0, 8) << std::endl;
+    std::cout << emulator.formatBusRange(0x0100, 0x010f, 8) << std::endl;
 
     display.quit();
     SDL_Quit();

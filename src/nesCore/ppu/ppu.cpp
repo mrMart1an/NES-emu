@@ -152,7 +152,7 @@ void PPU::writeRegister(uint16_t addr, uint8_t data) {
                 m_ppuAddrTmp = (m_ppuAddrTmp & 0xFFE0) | (static_cast<uint16_t>(data) >> 3);
             } else {
                 m_ppuAddrTmp = (m_ppuAddrTmp & 0x8FFF) | (static_cast<uint16_t>(data) << 12);
-                m_ppuAddrTmp = (m_ppuAddrTmp & 0xFC1F) | (static_cast<uint16_t>(data & 0x07) << 2);
+                m_ppuAddrTmp = (m_ppuAddrTmp & 0xFC1F) | (static_cast<uint16_t>(data & 0xF8) << 2);
             }
 
             m_wLatch = !m_wLatch;

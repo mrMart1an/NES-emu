@@ -15,7 +15,7 @@ public:
 
     // Initialize the display
     // return 0 on success
-    int init();
+    int init(bool hideDangerZone = true);
     // Display quit function
     void quit();
 
@@ -35,7 +35,9 @@ private:
 
     SDL_Renderer *mp_renderer;
     SDL_Texture *mp_texture;
-    SDL_Rect m_textureRect;
+
+    SDL_Rect m_srcRect;
+    SDL_Rect m_destRect;
 };
 
 }
