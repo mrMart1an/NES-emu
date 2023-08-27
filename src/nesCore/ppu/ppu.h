@@ -89,6 +89,9 @@ private:
     uint16_t m_backgroundShiftH;
     uint16_t m_backgroundShiftL;
 
+    uint8_t m_currentAttribute;
+    uint8_t m_nextAttribute;
+
     uint16_t m_ppuAddrTmp;
     uint16_t m_ppuAddrCurrent;
 
