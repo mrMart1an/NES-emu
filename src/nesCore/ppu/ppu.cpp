@@ -251,16 +251,28 @@ Interrupt6502 PPU::clock(size_t cpuCycle) {
                 }
             }
 
-            // Rendering scan lines
+            // Render the visible scan lines
             if (m_scanLine < 240 && m_scanCycle > 0 && m_scanCycle < 257) {
+                // Check if background rendering is disable
+                // If left most rendering is disable don't render the left most tile
+                if ((m_ppuMask & MASK_LEFT_BRG || m_scanCycle > 8) && m_ppuMask & MASK_SHOW_BRG) {
+                    uint8_t pixel = ((m_backgroundShiftL << m_xFineScrolling) & 0x8000) >> 15;
+                    pixel |= ((m_backgroundShiftH << m_xFineScrolling) & 0x8000) >> 14;
 
-                uint8_t pixel = (((m_backgroundShiftL << m_xFineScrolling) & 0x8000) >> 15) | (((m_backgroundShiftH << m_xFineScrolling) & 0x8000) >> 14);
-                uint8_t color = mp_ppuBus->read(0x3F00 + pixel);
+                    uint8_t color = mp_ppuBus->read(0x3F00 | pixel | m_currentAttribute << 2);
+                    if (pixel == 0)
+                        color = mp_ppuBus->read(0x3F00);
 
-                // Update pixel color
-                mp_frameBuffer->setPixel(m_scanCycle - 1, m_scanLine, color);
+                    // Update pixel color
+                    mp_frameBuffer->setPixel(m_scanCycle - 1, m_scanLine, color);
+                } else {
+                    // If anything is disable fill it with the universal background color
+                    uint8_t color = mp_ppuBus->read(0x3F00);
+                    mp_frameBuffer->setPixel(m_scanCycle - 1, m_scanLine, color);
+                }
             }
 
+            // Shift the pattern table register
             if (m_scanLine < 240 || m_scanLine == 261) {
                 if ((m_scanCycle > 0 && m_scanCycle < 257) || (m_scanCycle > 320 && m_scanCycle < 337)) {
                     m_backgroundShiftH <<= 1;
@@ -270,15 +282,29 @@ Interrupt6502 PPU::clock(size_t cpuCycle) {
 
             // Address register Increment and updates
             if (m_scanLine < 240 || m_scanLine == 261) {
-                // Increment X 
                 if ((m_scanCycle % 8 == 0) && ((m_scanCycle > 0 && m_scanCycle < 257) || (m_scanCycle > 320 && m_scanCycle < 337))) {
+                    // Load the next tile attribute datas
+                    m_currentAttribute = m_nextAttribute;
+
+                    uint16_t attributeAddr = 0x23C0;
+                    attributeAddr |= (m_ppuAddrCurrent & 0x0C00) | ((m_ppuAddrCurrent >> 4) & 0x38) | ((m_ppuAddrCurrent >> 2) & 0x07);
+                    
+                    uint8_t attributeShift = (m_ppuAddrCurrent & 0x0002) ;
+                    attributeShift |= (m_ppuAddrCurrent & 0x0040) >> 4;
+
+                    uint8_t attribute = mp_ppuBus->read(attributeAddr);
+                    m_nextAttribute = (attribute >> attributeShift) & 0x03;
+
+                    // Load new data in pattern table shift registers 
                     uint8_t tile = mp_ppuBus->read(0x2000 | (m_ppuAddrCurrent & 0x0FFF));
-                    uint16_t tileAddr = (m_ppuAddrCurrent >> 12) | static_cast<uint16_t>(tile) << 4;
-                    tileAddr |= ((m_ppuCtrl & CTRL_BRG_PATTERN) != 0) << 12;
 
-                    m_backgroundShiftH = (m_backgroundShiftH & 0xFF00) | (mp_ppuBus->read(tileAddr + 8));
-                    m_backgroundShiftL = (m_backgroundShiftL & 0xFF00) | (mp_ppuBus->read(tileAddr));
+                    uint16_t patterAddr = (m_ppuAddrCurrent >> 12) | static_cast<uint16_t>(tile) << 4;
+                    patterAddr |= ((m_ppuCtrl & CTRL_BRG_PATTERN) != 0) << 12;
 
+                    m_backgroundShiftH = (m_backgroundShiftH & 0xFF00) | (mp_ppuBus->read(patterAddr + 8));
+                    m_backgroundShiftL = (m_backgroundShiftL & 0xFF00) | (mp_ppuBus->read(patterAddr));
+
+                    // Increment X 
                     coarseIncX();
                 }
 
@@ -296,7 +322,7 @@ Interrupt6502 PPU::clock(size_t cpuCycle) {
                     coarseResetY();
             }
 
-         } // Rendering enable
+         }
 
         // Post rendering scan line
         if (m_scanLine == 241 && m_scanCycle == 1) {
@@ -319,15 +345,6 @@ Interrupt6502 PPU::clock(size_t cpuCycle) {
         }
 
         m_oddFrame = !m_oddFrame;
-
-        // int y = ((m_ppuAddrCurrent >> 2) & 0x00F8) | (m_ppuAddrCurrent >> 12);
-        // int x = ((m_ppuAddrCurrent & 0x001F) << 3) | m_xFineScrolling;
-        //
-        // int yA = m_scanLine;// / 8;
-        // int xA = m_scanCycle;// / 8;
-
-        //std::cout << "Ax: " << xA << "; X: " << x << std::endl;
-        //std::cout << "Ay: " << yA << "; Y: " << y << std::endl;
     }
 
     // Increment PPU cycles counter and return the interrupt

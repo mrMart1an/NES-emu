@@ -59,8 +59,16 @@ uint8_t PpuBus::read(uint16_t inAddr) {
     } 
     
     // Read palette data
-    if (addr >= 0x3F00 && addr <= 0x3FFF) 
-        return palette[addr - 0x3F00];
+    if (addr >= 0x3F00 && addr <= 0x3FFF) {
+        uint16_t addrPalette = (addr - 0x3F00) & 0x001F;
+
+        // Mirror the background bytes
+        uint16_t bgAddr = addrPalette & 0x0F;
+        if (bgAddr == 0 || bgAddr == 0x04 || bgAddr == 0x08)
+            addrPalette = bgAddr;
+
+        return palette[addrPalette];
+    } 
 
     return 0x00;
 }
@@ -85,7 +93,13 @@ void PpuBus::write(uint16_t inAddr, uint8_t data) {
     
     // Write palette data
     if (addr >= 0x3F00 && addr <= 0x3FFF) {
-        uint16_t addrPalette = (addr - 0x3F00) % 0x001F;
+        uint16_t addrPalette = (addr - 0x3F00) & 0x001F;
+
+        // Mirror the background bytes
+        uint16_t bgAddr = addrPalette & 0x0F;
+        if (bgAddr == 0 || bgAddr == 0x04 || bgAddr == 0x08)
+            addrPalette = bgAddr;
+
         palette[addrPalette] = data;
     } 
 }

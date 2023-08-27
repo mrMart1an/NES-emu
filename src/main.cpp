@@ -31,15 +31,18 @@ int main (int argc, char *argv[]) {
     
     //emulator.loadCartridge("roms/horizscroll.nes");
     emulator.loadCartridge("roms/Zelda.NES");
-    //emulator.loadCartridge("roms/DonkeyKong.nes");
+    emulator.loadCartridge("roms/DonkeyKong.nes");
     //emulator.loadCartridge("roms/nestest.nes");
     //emulator.loadCartridge("roms/helloworld.nes");
+    //emulator.loadCartridge("roms/xyscroll.nes");
+    //emulator.loadCartridge("roms/scrollV.nes");
+    //emulator.loadCartridge("roms/attributes.nes");
 
     emulator.attachIO(&sdlGamepad);
     display.attackFrameBuffer(emulator.getFrameBuffer());
 
     bool quit = false;
-    bool emulate = false;
+    bool emulate = true;
     SDL_Event event;
 
     while (!quit) {
