@@ -30,13 +30,16 @@ int main (int argc, char *argv[]) {
     emulator.loadPalette("palettes/2C02G.pal");
     
     //emulator.loadCartridge("roms/horizscroll.nes");
-    emulator.loadCartridge("roms/Zelda.NES");
-    emulator.loadCartridge("roms/DonkeyKong.nes");
+    //emulator.loadCartridge("roms/Zelda.NES");
+    //emulator.loadCartridge("roms/DonkeyKong.nes");
+    emulator.loadCartridge("roms/SuperMario.nes");
     //emulator.loadCartridge("roms/nestest.nes");
     //emulator.loadCartridge("roms/helloworld.nes");
     //emulator.loadCartridge("roms/xyscroll.nes");
-    //emulator.loadCartridge("roms/scrollV.nes");
+    //emulator.loadCartridge("roms/scroll.nes");
     //emulator.loadCartridge("roms/attributes.nes");
+    //emulator.loadCartridge("roms/sprites.nes");
+    //emulator.loadCartridge("roms/road.nes");
 
     emulator.attachIO(&sdlGamepad);
     display.attackFrameBuffer(emulator.getFrameBuffer());
@@ -52,7 +55,6 @@ int main (int argc, char *argv[]) {
 
             if (false) {
                 nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
-                nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
 
                 if (true || (info.cpuCycle >= 000 && info.cpuCycle <= 2000)) {
                     std::cout << info.log() << " -- ";
@@ -90,7 +92,6 @@ int main (int argc, char *argv[]) {
                     emulator.step();
 
                     nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
-                    nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
 
                     std::cout << info.log() << " -- ";
                     std::cout << emulator.decompileInstruction(info.pc) << std::endl;
@@ -101,17 +102,16 @@ int main (int argc, char *argv[]) {
                         emulator.step();
 
                         nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
-                        nesCore::debug::PPUDebug infoPPU = emulator.ppuDebugInfo();
 
-                        //std::cout << info.log() << " -- ";
-                        //std::cout << emulator.decompileInstruction(info.pc) << std::endl;
+                        std::cout << info.log() << " -- ";
+                        std::cout << emulator.decompileInstruction(info.pc) << std::endl;
                      }
                 }
             }
         }
     }
 
-    std::cout << emulator.formatBusRange(0x0100, 0x010f, 8) << std::endl;
+    std::cout << emulator.formatBusRange(0x0200, 0x02F0, 16) << std::endl;
 
     display.quit();
     SDL_Quit();

@@ -39,7 +39,23 @@ enum PPU_STATUS_BITS {
     STATUS_VBLACK = 0b10000000,
 };
 
+enum SPRITE_ATTRIBUTE_BITS {
+    SPRITE_PALETTE = 0b00000011,
+    SPRITE_PRIORITY = 0b00100000,
+    SPRITE_FLIP_H = 0b01000000,
+    SPRITE_FLIP_V = 0b10000000,
+};
+
 class PPU {
+private:
+    // Sprite memory layout in the OAM memory
+    struct Sprite {
+        uint8_t y;
+        uint8_t tile;
+        uint8_t attribute;
+        uint8_t x;
+    };
+
 public:
     PPU(PpuBus* ppuBus);
     void reset();
@@ -67,6 +83,10 @@ private:
     inline void coarseResetX();
     inline void coarseResetY();
 
+    inline void rendering();
+    inline void spriteEvaluation();
+    inline void backgroundEvaluation();
+
 // Private member variable
 private:
     uint64_t m_ppuCycles;
@@ -77,8 +97,6 @@ private:
     // Flag used to inform the emulator of vblank
     bool m_vblankStart;
 
-    uint8_t m_OAM[256];
-
     // PPU bus
     PpuBus* mp_ppuBus;
 
@@ -86,18 +104,41 @@ private:
     FrameBuffer* mp_frameBuffer;
 
     // Rendering and address registers
+    bool m_oddFrame;
+
+    // Background registers
     uint16_t m_backgroundShiftH;
     uint16_t m_backgroundShiftL;
 
-    uint8_t m_currentAttribute;
-    uint8_t m_nextAttribute;
+    uint16_t m_attributeShiftH;
+    uint16_t m_attributeShiftL;
 
     uint16_t m_ppuAddrTmp;
     uint16_t m_ppuAddrCurrent;
 
     uint8_t m_xFineScrolling;
 
-    bool m_oddFrame;
+    // Sprites registers
+    size_t m_spritePosition;
+
+    Sprite m_OAM[64];
+    Sprite m_secondaryOAM[8];
+
+    size_t m_primaryOAMpos;
+    size_t m_secondaryOAMpos;
+
+    uint8_t m_spriteShiftH[8];
+    uint8_t m_spriteShiftL[8];
+
+    uint8_t m_spriteAttribute[8];
+    uint8_t m_spriteX[8];
+
+    // Set to true if sprite zero is on the current scanline
+    bool m_spriteZeroScanline;
+
+    // Current theoretical cycle the sprite evaluation reached
+    // Used to provide cycle accurate sprite evaluation
+    size_t m_spriteEvaCycle;
 
     // PPU registers
     uint8_t m_ppuCtrl;

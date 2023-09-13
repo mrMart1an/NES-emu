@@ -31,9 +31,17 @@ public:
     void write16PageWrap(uint16_t addr, uint16_t data);
     uint16_t read16PageWrap(uint16_t addr, bool debugRead = false);
 
+    // Return true if the CPU should be halted for DMA execution 
+    bool dmaCycles();
+
     // Return a sting with a formatted region of the bus
     // Take a memory range as input (both extreme are included)
     std::string formatRange(uint16_t from, uint16_t to, uint width);
+
+// Private methods
+private:
+    // Run the OAM DMA transfer routine
+    void OAMDMAtransfer(uint8_t pageNumber);
 
 public:
     // NES 6502 based CPU 
@@ -45,6 +53,8 @@ public:
 
     Cartridge* cartridge;
     IOInterface* ioInterface;
+
+    bool m_dmaCycles;
 };
 }
 
