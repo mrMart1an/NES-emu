@@ -42,6 +42,13 @@ void PPU::reset() {
     m_scanLine = 0;
 
     m_busLatch = 0;
+
+    m_primaryOAMpos = 0;
+    m_secondaryOAMpos = 0;
+    m_spritePosition = 0;
+
+    m_spriteEvaCycle = 0;
+    m_spriteZeroScanline = false;
 }
 
 // Get debug info

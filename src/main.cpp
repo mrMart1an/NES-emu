@@ -16,7 +16,7 @@
 
 int main (int argc, char *argv[]) {
     // Init Sdl2 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         std::cout << "Failed to initialized SDL2" << std::endl;
         return -1;
     }
@@ -75,7 +75,7 @@ int main (int argc, char *argv[]) {
             if ( event.type == SDL_QUIT )
                 quit = true;
             // Handle resize event
-            if ( event.type == SDL_WINDOWEVENT) {
+            if ( event.type == SDL_WINDOWEVENT ) {
                 switch ( event.window.event ) {
                     case SDL_WINDOWEVENT_RESIZED:
                         display.resize();
