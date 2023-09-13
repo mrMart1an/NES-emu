@@ -63,21 +63,25 @@ void NesEmulator::loadCartridge(const std::string& filename) {
 
     char header[16];
     file.read(header, 16);
-    
+
     // Check the header for a iNES file
     if (header[0] != 0x4E || header[1] != 0x45 || header[2] != 0x53 || header[3] != 0x1A)
         return;
 
+    // Check for NES2 rom format
+    bool NES2Format= (header[7] & 0x0C) == 0x08;
+    if (NES2Format)
+        std::cout << "ROM format: NES 2.0" << std::endl;
+    else
+        std::cout << "ROM format: iNES" << std::endl;
+    
     // Get the mapper id from flag 6 and 7
     uint8_t mapperId = (header[6] >> 4) | (header[7] & 0xF0);
 
-    // for (int i = 0; i < 16; i++) {
-    //     std::cout << std::hex << (int)header[i] << std::endl;
-    // }
-     
     // Get the PRG and CHR ROM size in 16Kb blocks
     uint8_t prgRomSize = header[4];
     uint8_t chrRomSize = header[5];
+    uint8_t prgRamSize = header[8];
 
     // Load the program ROM
     uint8_t* prgRom = new uint8_t[16 * 1024 * prgRomSize];
@@ -94,6 +98,7 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     CartridgeOption cartOpt;
     cartOpt.prgBanksCount = prgRomSize;
     cartOpt.chrBanksCount = chrRomSize;
+    cartOpt.prgRamBanksCount = prgRamSize;
 
     cartOpt.mirroringMode = mirroringMode;
 

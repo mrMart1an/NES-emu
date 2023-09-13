@@ -22,6 +22,7 @@ public:
 
 private:
     uint8_t* mp_prgRom;
+    uint8_t* mp_prgRam;
     uint8_t* mp_chrRom;
 
     // Number of install memory bank

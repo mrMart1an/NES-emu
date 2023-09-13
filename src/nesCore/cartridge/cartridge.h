@@ -15,6 +15,8 @@ enum MirroringMode {
 struct CartridgeOption {
     uint8_t prgBanksCount;
     uint8_t chrBanksCount;
+    // 8Kb banks of prg RAM
+    uint8_t prgRamBanksCount;
 
     MirroringMode mirroringMode;
 };
