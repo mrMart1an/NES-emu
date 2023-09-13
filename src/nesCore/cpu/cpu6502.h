@@ -35,7 +35,7 @@ public:
 
     // Execute the next instruction and return
     // the number of cycle required
-    size_t executeInstruction(Interrupt6502 interrupt = NOINT);
+    size_t step(Interrupt6502 interrupt = NOINT);
 
     // Return a debug struct with the current CPU status
     debug::Cpu6502Debug getDebugInfo();

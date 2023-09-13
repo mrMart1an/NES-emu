@@ -44,7 +44,7 @@ void NesEmulator::attachIO(IOInterface* interface) {
 
 // Execute one CPU instruction
 void NesEmulator::step() {
-    uint8_t cpuCycle = m_cpuBus.cpu.executeInstruction(m_ppuInt);
+    size_t cpuCycle = m_cpuBus.cpu.step(m_ppuInt);
     m_ppuInt = m_ppuBus.ppu.clock(cpuCycle);
 }
 

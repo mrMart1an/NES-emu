@@ -122,7 +122,7 @@ void Cpu6502::executeInterrupt(Interrupt6502 interrupt) {
 }
 
 // Execute an instruction and return the number of cycle required
-size_t Cpu6502::executeInstruction(Interrupt6502 interrupt) {
+size_t Cpu6502::step(Interrupt6502 interrupt) {
     uint64_t startCycles = m_cpuCycle;
 
     // Poll the interrupt for the next instruction
@@ -670,6 +670,11 @@ size_t Cpu6502::executeInstruction(Interrupt6502 interrupt) {
     // Execute interrupt if one was received during the last instruction
     // and increment the cycle counter
     executeInterrupt(interrupt);
+
+    // Check if the DMA was active
+    if (m_bus->dmaCycles())
+        // Add an aliment cycle on odd CPU cycles
+        m_cpuCycle += m_cpuCycle % 2 ? 514 : 513;
 
     // Return the number of cycle and update CPU cycle counter
     return m_cpuCycle - startCycles;
