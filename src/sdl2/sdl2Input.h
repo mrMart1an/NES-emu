@@ -33,10 +33,13 @@ public:
     void updateInput(SDL_Event* event);
 
 private:
+    // IO registers
     uint8_t m_latch;
 
     uint8_t m_tmpInput;
     uint8_t m_inputRegister;
+
+    SDL_GameController* joy;
 };    
 }
 
