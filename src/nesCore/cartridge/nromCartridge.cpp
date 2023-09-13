@@ -1,6 +1,7 @@
 #include "nromCartridge.h"
 #include "cartridge.h"
 #include <algorithm>
+#include <cstdint>
 #include <iostream>
 
 namespace nesCore {
@@ -12,6 +13,11 @@ NromCartridge::NromCartridge(uint8_t* p_prgRom, uint8_t* p_chrRom, CartridgeOpti
         cartOpt.prgBanksCount = 2;
     if (cartOpt.prgBanksCount == 0)
         cartOpt.prgBanksCount = 1;
+
+    // Prg ram size is always one for compatibility 
+    cartOpt.prgRamBanksCount = 1;
+    mp_prgRam = new uint8_t[8 * 1024];
+    std::fill(mp_prgRam, mp_prgRam + (8 * 1024), 0x00);
 
     m_banksCount = cartOpt.prgBanksCount;
 
@@ -38,14 +44,21 @@ NromCartridge::NromCartridge(uint8_t* p_prgRom, uint8_t* p_chrRom, CartridgeOpti
 // Deallocate the memory banks
 NromCartridge::~NromCartridge() {
     delete[] mp_prgRom;
+    delete[] mp_prgRam;
     delete[] mp_chrRom;
 }
 
 // Write to a specific address of the cartridge
-void NromCartridge::cpuWrite(uint16_t addr, uint8_t data) {}
+void NromCartridge::cpuWrite(uint16_t addr, uint8_t data) {
+    if (addr >= 0x6000 && addr <= 0x7FFF)
+        mp_prgRam[addr - 0x6000] = data;
+}
 
 // Read to a specific address of the cartridge
 uint8_t NromCartridge::cpuRead(uint16_t addr) {
+    if (addr >= 0x6000 && addr <= 0x7FFF)
+        return mp_prgRam[addr - 0x6000];
+
     if (addr >= 0x8000 && addr <= 0xFFFF)
         return mp_prgRom[(addr - 0x8000) % (m_banksCount * 16 * 1024)];
     

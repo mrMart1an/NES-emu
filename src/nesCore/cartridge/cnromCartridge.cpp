@@ -18,6 +18,11 @@ CnromCartridge::CnromCartridge(uint8_t* p_prgRom, uint8_t* p_chrRom, CartridgeOp
     m_prgBanksCount = cartOpt.prgBanksCount;
     m_chrBanksCount = cartOpt.chrBanksCount;
 
+    // Prg ram size is always one for compatibility 
+    cartOpt.prgRamBanksCount = 1;
+    mp_prgRam = new uint8_t[8 * 1024];
+    std::fill(mp_prgRam, mp_prgRam + (8 * 1024), 0x00);
+
     // If a null pointer is given to p_prgRom allocate a 16Kb memory bank
     if (p_prgRom != nullptr) {
         mp_prgRom = p_prgRom;
@@ -44,22 +49,30 @@ CnromCartridge::CnromCartridge(uint8_t* p_prgRom, uint8_t* p_chrRom, CartridgeOp
 // Deallocate the memory banks
 CnromCartridge::~CnromCartridge() {
     delete[] mp_prgRom;
+    delete[] mp_prgRam;
     delete[] mp_chrRom;
 }
 
 // Write to a specific address of the cartridge
 void CnromCartridge::cpuWrite(uint16_t addr, uint8_t data) {
-    // Perform the modulo of the requested window and 
-    // the number of banks to avoid overflow
-    data %= m_chrBanksCount;
-
+    if (addr >= 0x6000 && addr <= 0x7FFF)
+        mp_prgRam[addr - 0x6000] = data;
+    
     // Move the ppu data window
-    if (addr >= 0x8000 && addr <= 0xFFFF)
+    if (addr >= 0x8000 && addr <= 0xFFFF) {
+        // Perform the modulo of the requested window and 
+        // the number of banks to avoid overflow
+        data %= m_chrBanksCount;
+
         mp_chrWindow = mp_chrRom + (8 * 1024 * data);
+    }
 }
 
 // Read to a specific address of the cartridge
 uint8_t CnromCartridge::cpuRead(uint16_t addr) {
+    if (addr >= 0x6000 && addr <= 0x7FFF)
+        return mp_prgRam[addr - 0x6000];
+    
     if (addr >= 0x8000 && addr <= 0xFFFF)
         return mp_prgRom[(addr - 0x8000) % (m_prgBanksCount * 16 * 1024)];
     
