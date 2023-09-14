@@ -10,9 +10,16 @@ namespace nesCore {
 enum MirroringMode {
     HORIZONTAL_MIRRORING = 0,
     VERTICAL_MIRRORING = 1,
+    FOUR_SCREEN = 2,
 };
 
 struct CartridgeOption {
+    // File opt
+    uint16_t mapperId;
+    uint8_t subMapper;
+    bool NES2format;
+
+    // Memory banks count
     uint8_t prgBanksCount;
     uint8_t chrBanksCount;
     // 8Kb banks of prg RAM

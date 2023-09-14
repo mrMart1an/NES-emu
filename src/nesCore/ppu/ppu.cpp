@@ -309,7 +309,7 @@ inline void PPU::spriteEvaluation() {
         m_spritePosition = 0;
 
         m_spriteEvaCycle = 65;
-        m_spriteZeroScanline = false;
+        m_spriteZeroNextScanline = false;
     }
 
     // Reset the secondary OAM
@@ -334,7 +334,7 @@ inline void PPU::spriteEvaluation() {
                     m_secondaryOAM[m_secondaryOAMpos] = m_OAM[m_primaryOAMpos];
 
                 if (m_primaryOAMpos == 0)
-                    m_spriteZeroScanline = true;
+                    m_spriteZeroNextScanline = true;
 
                 m_secondaryOAMpos += 1;
                 m_spriteEvaCycle += 6;
@@ -363,6 +363,9 @@ inline void PPU::spriteEvaluation() {
 
     // Copy data to rendering register for the next scanline
     if (m_scanCycle  == 257) {
+        // Set sprite zero hit scanline for the incoming scanline
+        m_spriteZeroScanline = m_spriteZeroNextScanline;
+
         int i = 0;
 
         // Loop for not empty sprite slot
@@ -438,7 +441,7 @@ inline void PPU::rendering() {
         if (m_ppuMask & MASK_SHOW_SPR) {
             uint8_t sprAttribute = 0x00;
             uint8_t sprPixel = 0x00;
-            uint8_t sprNumber = 0;
+            uint8_t sprNumber = 1;
 
             for (int i = 7; i >= 0; i--) {
                 if (m_spriteX[i] == 0) {
@@ -475,8 +478,9 @@ inline void PPU::rendering() {
             // Determine render priority
             if (sprPixel != 0 && (m_ppuMask & MASK_LEFT_SPR || m_scanCycle > 8)) {
                 // Check for sprite zero hit
-                if (m_spriteZeroScanline && sprNumber == 0 && outputPixel != 0)
+                if (m_spriteZeroScanline && sprNumber == 0 && outputPixel != 0) {
                     m_ppuStatus |= STATUS_SPR_HIT;
+                }
 
                 if ((sprAttribute & SPRITE_PRIORITY) == 0 || outputPixel == 0) {
                     outputPixel = sprPixel;

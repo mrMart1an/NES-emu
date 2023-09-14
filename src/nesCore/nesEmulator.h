@@ -29,6 +29,9 @@ public:
 
     // Load the color palette from file
     void loadPalette(const std::string& filename);
+    // Parse file header for iNES and NES 2
+    CartridgeOption iNESparse(uint8_t* header);
+    CartridgeOption NES2parse(uint8_t* header);
 
     // Execute one CPU instruction
     void step();

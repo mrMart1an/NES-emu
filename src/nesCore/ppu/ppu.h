@@ -133,8 +133,10 @@ private:
     uint8_t m_spriteAttribute[8];
     uint8_t m_spriteX[8];
 
-    // Set to true if sprite zero is on the current scanline
+    // Set to true if sprite zero is on the current rendered scanline
     bool m_spriteZeroScanline;
+    // Used during spite evaluation to determine the value of sprite zero scanline
+    bool m_spriteZeroNextScanline;
 
     // Current theoretical cycle the sprite evaluation reached
     // Used to provide cycle accurate sprite evaluation
