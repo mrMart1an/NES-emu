@@ -37,6 +37,7 @@ int main (int argc, char *argv[]) {
     //emulator.loadCartridge("roms/helloworld.nes");
     //emulator.loadCartridge("roms/xyscroll.nes");
     //emulator.loadCartridge("roms/scroll.nes");
+    //emulator.loadCartridge("roms/PacMan.nes");
     //emulator.loadCartridge("roms/attributes.nes");
     //emulator.loadCartridge("roms/sprites.nes");
     //emulator.loadCartridge("roms/road.nes");

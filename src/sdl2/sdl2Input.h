@@ -18,7 +18,17 @@ enum GAMEPAD_BIT {
     GP_RIGHT = 0b10000000,
 };
 
+enum JOYSTICK_DIRECTION {
+    STICK_UP = 0b0001,
+    STICK_DOWN = 0b0010,
+    STICK_LEFT = 0b0100,
+    STICK_RIGHT = 0b1000,
+};
+
 class Sdl2Input: public nesCore::IOInterface {
+    // Joystick movement control threshold
+    const int32_t JOYSTICK_THRESHOLD = 20000;
+
 public:
     Sdl2Input();
 
@@ -40,6 +50,7 @@ private:
     uint8_t m_inputRegister;
 
     SDL_GameController* joy;
+    uint8_t m_joystickStatus;
 };    
 }
 
