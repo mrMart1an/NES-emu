@@ -61,66 +61,64 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     // open the file and read the header
     std::ifstream file(filename, std::ios_base::binary);
 
-    char header[16];
-    file.read(header, 16);
+    uint8_t header[16];
+    file.read((char*)header, 16);
 
     // Check the header for a iNES file
     if (header[0] != 0x4E || header[1] != 0x45 || header[2] != 0x53 || header[3] != 0x1A)
         return;
 
-    // Check for NES2 rom format
-    bool NES2Format= (header[7] & 0x0C) == 0x08;
+    // Check for NES2 rom format and parse cartridge options
+    bool NES2Format = (header[7] & 0x0C) == 0x08;
+    CartridgeOption cartOpt = NES2Format ? iNESparse(header) : NES2parse(header);
+    
+    // Load the program ROM
+    uint8_t* prgRom = new uint8_t[16 * 1024 * cartOpt.prgBanksCount];
+    file.read((char*)prgRom, 16 * 1024 * cartOpt.prgBanksCount);
+
+    // Load the character ROM
+    uint8_t* chrRom = new uint8_t[8 * 1024 * cartOpt.chrBanksCount];
+    file.read((char*)chrRom, 8 * 1024 * cartOpt.chrBanksCount);
+
+    // Print file format
     if (NES2Format)
         std::cout << "ROM format: NES 2.0" << std::endl;
     else
         std::cout << "ROM format: iNES" << std::endl;
-    
-    // Get the mapper id from flag 6 and 7
-    uint8_t mapperId = (header[6] >> 4) | (header[7] & 0xF0);
 
-    // Get the PRG and CHR ROM size in 16Kb blocks
-    uint8_t prgRomSize = header[4];
-    uint8_t chrRomSize = header[5];
-    uint8_t prgRamSize = header[8];
+    // Print mapper
+    std::cout << "Loading cartridge with mapper: ";
+    std::cout << cartOpt.mapperId << std::endl;
 
-    // Load the program ROM
-    uint8_t* prgRom = new uint8_t[16 * 1024 * prgRomSize];
-    file.read((char*)prgRom, 16 * 1024 * prgRomSize);
+    // Print mirroring mode
+    switch (cartOpt.mirroringMode) {
+        case HORIZONTAL_MIRRORING:
+            std::cout << "Mirroring: horizontal" << std::endl;
+            break;
 
-    // Load the character ROM
-    uint8_t* chrRom = new uint8_t[8 * 1024 * chrRomSize];
-    file.read((char*)chrRom, 8 * 1024 * chrRomSize);
+        case VERTICAL_MIRRORING:
+            std::cout << "Mirroring: vertical" << std::endl;
+            break;
 
-    // Get mirroring mode
-    MirroringMode mirroringMode = static_cast<MirroringMode>(header[6] & 0b00000001);
-
-    // Generate cartridge options
-    CartridgeOption cartOpt;
-    cartOpt.prgBanksCount = prgRomSize;
-    cartOpt.chrBanksCount = chrRomSize;
-    cartOpt.prgRamBanksCount = prgRamSize;
-
-    cartOpt.mirroringMode = mirroringMode;
-
-    std::cout << "Mirroring: " << (int)mirroringMode << std::endl;
-
+        case FOUR_SCREEN:
+            std::cout << "Mirroring: four screen(Not supported)" << std::endl;
+            return;
+    }
+            
     // Generate the cartridge if supported
-    switch (mapperId) {
+    switch (cartOpt.mapperId) {
         // Mapper 0: NROM
         case 0x00:
             mp_cartridge = new NromCartridge(prgRom, chrRom, cartOpt);
-            std::cout << "Loading cartridge with mapper 0" << std::endl;
             break;
 
         // Mapper 3: CNROM
         case 0x03:
             mp_cartridge = new CnromCartridge(prgRom, chrRom, cartOpt);
-            std::cout << "Loading cartridge with mapper 3" << std::endl;
             break;
 
         default:
-            std::cout << "Mapper unsupported: ";
-            std::cout << static_cast<int>(mapperId);
+            std::cout << "Mapper unsupported";
             std::cout << std::endl;
     }
 
@@ -132,6 +130,60 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     m_ppuBus.attachCartriadge(mp_cartridge);
     m_cpuBus.cpu.reset();
     m_ppuBus.ppu.reset();
+}
+
+// iNES file header parser
+CartridgeOption NesEmulator::iNESparse(uint8_t* header) {
+    CartridgeOption outputOpt;
+    outputOpt.NES2format = false;
+
+    // Get the mapper id from flag 6 and 7
+    outputOpt.mapperId = (header[6] >> 4) | (header[7] & 0xF0);
+
+    // Generate cartridge options 
+    // Get the PRG and CHR ROM size in 16Kb blocks and get mirroring mode
+    outputOpt.prgBanksCount = header[4];
+    outputOpt.chrBanksCount = header[5];
+    outputOpt.prgRamBanksCount = header[8];
+
+    // Get mirroring mode
+    if (header[6] & 0x04) {
+        outputOpt.mirroringMode = FOUR_SCREEN;
+    } else {
+        if (header[6] & 0x01)
+            outputOpt.mirroringMode = VERTICAL_MIRRORING;
+        else
+            outputOpt.mirroringMode = HORIZONTAL_MIRRORING;
+    }
+
+    return outputOpt;
+}
+
+// NES2 file header parser
+CartridgeOption NesEmulator::NES2parse(uint8_t* header) {
+    CartridgeOption outputOpt;
+    outputOpt.NES2format = true;
+
+    // Get the mapper id from flag 6 and 7
+    outputOpt.mapperId = ((header[8] & 0x0F) << 8) | (header[7] & 0xF0) | (header[6] >> 4);
+
+    // Generate cartridge options 
+    // Get the PRG and CHR ROM size in 16Kb blocks and get mirroring mode
+    outputOpt.prgBanksCount = header[4];
+    outputOpt.chrBanksCount = header[5];
+    outputOpt.prgRamBanksCount = 1;
+
+    // Get mirroring mode
+    if (header[6] & 0x04) {
+        outputOpt.mirroringMode = FOUR_SCREEN;
+    } else {
+        if (header[6] & 0x01)
+            outputOpt.mirroringMode = VERTICAL_MIRRORING;
+        else
+            outputOpt.mirroringMode = HORIZONTAL_MIRRORING;
+    }
+
+    return outputOpt;
 }
 
 bool NesEmulator::frameReady() {
