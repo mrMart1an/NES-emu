@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
@@ -34,7 +35,9 @@ int Sdl2Display::init(bool hideDangerZone) {
                                   nesCore::SCREEN_WIDTH, 
                                   nesCore::SCREEN_HEIGHT);
     
+    // Enable vsync and hide cursor
     SDL_RenderSetVSync(mp_renderer, 1);
+    SDL_ShowCursor(SDL_DISABLE);
 
     // Initialized the destination and source rects
     this->resize();

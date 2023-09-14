@@ -8,14 +8,10 @@
 
 namespace input {
 // Initialize all value to 0
-Sdl2Input::Sdl2Input() : m_latch(0), m_tmpInput(0), m_inputRegister(0) {
+Sdl2Input::Sdl2Input() : m_latch(0), m_tmpInput(0), m_inputRegister(0), m_joystickStatus(0) {
+    // #TODO Controller selection and hotplug
     // Get controller if it exist
     joy = SDL_GameControllerOpen(0);
-    //for (int i = 0; i < SDL_NumJoysticks(); i++) {
-    //    if (SDL_IsGameController(i)) {
-    //        mp_controller = SDL_GameControllerOpen(i);
-    //    }
-    //}
 }
 
 void Sdl2Input::updateInput(SDL_Event* event) {
@@ -55,13 +51,13 @@ void Sdl2Input::updateInput(SDL_Event* event) {
     }
 
     // #TODO key mapping
-    // Joypad input
+    // Gamepad input
     if (event->type == SDL_CONTROLLERBUTTONDOWN || event->type == SDL_CONTROLLERBUTTONUP) {
         switch (event->cbutton.button) {
             case SDL_CONTROLLER_BUTTON_A:
                 m_tmpInput = (m_tmpInput & ~GP_A) | (GP_A * keyStatus);
                 break;
-            case SDL_CONTROLLER_BUTTON_B:
+            case SDL_CONTROLLER_BUTTON_X:
                 m_tmpInput = (m_tmpInput & ~GP_B) | (GP_B * keyStatus);
                 break;
 
@@ -85,6 +81,58 @@ void Sdl2Input::updateInput(SDL_Event* event) {
                 m_tmpInput = (m_tmpInput & ~GP_SELECT) | (GP_SELECT * keyStatus);
                 break;
         }
+    }
+
+    // Joystick movement input 
+    bool joystickUpdate = false;
+    if (event->type == SDL_CONTROLLERAXISMOTION) {
+        int32_t axisValue = event->caxis.value;
+        uint8_t oldStatus = m_joystickStatus;
+
+        switch (event->caxis.axis) {
+            case 0:
+                if (axisValue > JOYSTICK_THRESHOLD)
+                    m_joystickStatus |= STICK_RIGHT;
+                else if (axisValue < -JOYSTICK_THRESHOLD)
+                    m_joystickStatus |= STICK_LEFT;
+                else 
+                    m_joystickStatus &= ~(STICK_RIGHT | STICK_LEFT);
+                break;     
+
+            case 1:
+                if (axisValue > JOYSTICK_THRESHOLD)
+                    m_joystickStatus |= STICK_DOWN;
+                else if (axisValue < -JOYSTICK_THRESHOLD)
+                    m_joystickStatus |= STICK_UP;
+                else 
+                    m_joystickStatus &= ~(STICK_UP | STICK_DOWN);
+                break;     
+        }
+
+        if (m_joystickStatus != oldStatus)
+            joystickUpdate = true;
+    }
+
+    if (joystickUpdate) {
+        if (m_joystickStatus & STICK_LEFT)
+            m_tmpInput = (m_tmpInput & ~GP_LEFT) | GP_LEFT;
+        else
+            m_tmpInput = (m_tmpInput & ~GP_LEFT);
+
+        if (m_joystickStatus & STICK_RIGHT)
+            m_tmpInput = (m_tmpInput & ~GP_RIGHT) | GP_RIGHT;
+        else
+            m_tmpInput = (m_tmpInput & ~GP_RIGHT);
+
+        if (m_joystickStatus & STICK_UP)
+            m_tmpInput = (m_tmpInput & ~GP_UP) | GP_UP;
+        else
+            m_tmpInput = (m_tmpInput & ~GP_UP);
+
+        if (m_joystickStatus & STICK_DOWN)
+            m_tmpInput = (m_tmpInput & ~GP_DOWN) | GP_DOWN;
+        else
+            m_tmpInput = (m_tmpInput & ~GP_DOWN);
     }
 }
 
