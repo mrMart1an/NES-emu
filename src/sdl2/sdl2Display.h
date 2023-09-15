@@ -27,6 +27,9 @@ public:
     // Attach the frame buffer to the display
     void attackFrameBuffer(nesCore::FrameBuffer* buffer);
 
+    // Toggle window full screen mode
+    void toggleFullscreen();
+
 private:
     // Raw RGBA frame buffer
     uint32_t* mp_frameBuffer;

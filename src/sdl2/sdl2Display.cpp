@@ -99,4 +99,9 @@ void Sdl2Display::quit() {
 
 	SDL_DestroyWindow(mp_window);
 }
+
+void Sdl2Display::toggleFullscreen() {
+    bool isFullscreen = SDL_GetWindowFlags(mp_window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
+    SDL_SetWindowFullscreen(mp_window, isFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+}
 }
