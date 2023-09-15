@@ -47,6 +47,9 @@ NromCartridge::~NromCartridge() {
     delete[] mp_prgRam;
     delete[] mp_chrRom;
 }
+    
+// Handle reset signal
+void NromCartridge::reset() {} 
 
 // Write to a specific address of the cartridge
 void NromCartridge::cpuWrite(uint16_t addr, uint8_t data) {

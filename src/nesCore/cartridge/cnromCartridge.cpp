@@ -53,6 +53,11 @@ CnromCartridge::~CnromCartridge() {
     delete[] mp_chrRom;
 }
 
+// Handle reset signal
+void CnromCartridge::reset() {
+    mp_chrWindow = mp_chrRom;
+}
+
 // Write to a specific address of the cartridge
 void CnromCartridge::cpuWrite(uint16_t addr, uint8_t data) {
     if (addr >= 0x6000 && addr <= 0x7FFF)

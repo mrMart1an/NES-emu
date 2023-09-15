@@ -18,7 +18,10 @@ public:
     uint8_t ppuRead(uint16_t addr) override;
 
     // Get the cartridge name table mirroring type
-    virtual MirroringMode getMirroringMode() override;
+    MirroringMode getMirroringMode() override;
+
+    // Handle reset signal
+    void reset() override;
 
 private:
     uint8_t* mp_prgRom;

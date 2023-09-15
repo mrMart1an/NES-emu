@@ -113,9 +113,14 @@ int main (int argc, char *argv[]) {
                         break;
                 }
             }
+
             // Toggle window fullscreen
             if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F11)
                 display.toggleFullscreen();
+
+            // Reset the emulator
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F5)
+                emulator.reset();
 
             if ( event.type == SDL_KEYDOWN ) {
                 if (event.key.keysym.sym == SDLK_p)

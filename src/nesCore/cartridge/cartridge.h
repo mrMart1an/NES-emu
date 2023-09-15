@@ -40,6 +40,9 @@ public:
     // Read the byte of memory at the given address in CHR memory
     virtual uint8_t ppuRead(uint16_t addr) = 0;
 
+    // Set reset signal to the cartridge
+    virtual void reset() = 0;
+
     // Get the cartridge name table mirroring type
     virtual MirroringMode getMirroringMode() = 0;
 };
