@@ -7,30 +7,32 @@
 
 namespace nesCore {
 // CPU constructor
-Cpu6502::Cpu6502(Bus* bus) : m_bus(bus) {};
+Cpu6502::Cpu6502(Bus* bus) : m_bus(bus) {
+    // Initialize general purpose registers
+    m_regX = 0;
+    m_regY = 0;
+    m_accumulator = 0;
+
+    // Initialize status registers
+    m_carryFlag = false;
+    m_zeroFlag = false;
+    m_interruptDisable = true;
+    m_decimalMode = false; 
+    m_overflowFlag = false;
+    m_negativeFlag = false;
+};
 
 // Reset all the CPU register
 void Cpu6502::reset() {
     // Reset the cycle counter
     m_cpuCycle = 8;
 
-    // Reset general purpose registers
-    m_regX = 0;
-    m_regY = 0;
-    m_accumulator = 0;
-
     // Reset program counter and stack pointer
     m_pc = m_bus->read16(RESET_VECTOR_ADDR);
     m_stackPointer = 0xFD;
 
     // Reset status registers
-    m_carryFlag = false;
-    m_zeroFlag = true;
     m_interruptDisable = true;
-    m_decimalMode = false; 
-
-    m_overflowFlag = false;
-    m_negativeFlag = false;
 }
 
 // Return a copy of the status of the CPU

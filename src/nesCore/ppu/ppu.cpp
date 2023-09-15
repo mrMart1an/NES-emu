@@ -9,11 +9,6 @@
 
 namespace nesCore {
 PPU::PPU(PpuBus* ppuBus) : mp_ppuBus(ppuBus), mp_frameBuffer(nullptr) {
-    this->reset();
-}; 
-
-// Reset the PPU status
-void PPU::reset() {
     // Reset OAM memory
     uint8_t* p_OAM = reinterpret_cast<uint8_t*>(m_OAM);
     uint8_t* p_secondaryOAM = reinterpret_cast<uint8_t*>(m_secondaryOAM);
@@ -21,21 +16,34 @@ void PPU::reset() {
     std::fill(p_OAM, p_OAM + sizeof(m_OAM), 0x00);
     std::fill(p_secondaryOAM, p_secondaryOAM + sizeof(m_secondaryOAM), 0x00);
 
-    m_oddFrame = true;
+    // Initialize the rendering and address register
+    m_oamAddr = 0x00;
+
+    // Initialize the register
+    m_ppuStatus = 0b10100000;
+    
+
+    this->reset();
+}; 
+
+// Reset the PPU status
+void PPU::reset() {
+    m_oddFrame = false;
+    m_ppuCycles = 0;
 
     // Reset the rendering and address register
-    m_wLatch = false;
     m_ppuAddrTmp = 0x0000;
     m_ppuAddrCurrent = 0x0000;
+    m_wLatch = false;
 
     m_xFineScrolling = 0x00;
 
     // Reset the register
     m_ppuCtrl = 0x00;
     m_ppuMask = 0x00;
-    m_ppuStatus = 0x80;
 
     m_ppuData = 0x00;
+    m_oamData = 0x00;
 
     m_ppuCycles = 0;
     m_scanCycle = 0;
@@ -135,6 +143,10 @@ uint8_t PPU::readRegister(uint16_t addr) {
     return 0x00;
 }
 void PPU::writeRegister(uint16_t addr, uint8_t data) {
+    // Ignore all write operation before cycle 29658
+    if (m_ppuCycles <= 29658)
+        return;
+
     addr = (addr - 0x2000) % 0x0008;
 
     // Store the data on as bus latch
