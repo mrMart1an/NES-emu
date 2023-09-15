@@ -1,8 +1,10 @@
+#include <argparse/argparse.hpp>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_video.h>
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <string>
 
 #include "nesCore/inputOutput/IOInterface.h"
 #include "nesCore/nesEmulator.h"
@@ -15,10 +17,34 @@
 #include "sdl2/sdl2Input.h"
 
 int main (int argc, char *argv[]) {
+    // Parse commands line arguments
+    argparse::ArgumentParser argParser("nes_emu");
+
+    argParser.add_argument("romPath")
+        .help("specify the ROM file path");
+
+    argParser.add_argument("-p", "--palettes")
+        .default_value(std::string("palettes/2C02G.pal"))
+        .required()
+        .help("specify the color palettes file");
+
+    // Attempt to parse the arguments
+    try {
+        argParser.parse_args(argc, argv);
+    }
+    catch (const std::runtime_error& err) {
+        std::cerr << err.what() << std::endl;
+        std::cerr << argParser;
+        return 1;
+    }    
+
+    std::string romPath = argParser.get("romPath");
+    std::string palettePath = argParser.get("palettes");
+
     // Init Sdl2 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
-        std::cout << "Failed to initialized SDL2" << std::endl;
-        return -1;
+        std::cerr << "Failed to initialized SDL2" << std::endl;
+        return 2;
     }
 
     display::Sdl2Display display;
@@ -26,22 +52,26 @@ int main (int argc, char *argv[]) {
 
     input::Sdl2Input sdlGamepad;
 
+    // Init the emulator
     nesCore::NesEmulator emulator = nesCore::NesEmulator();
-    emulator.loadPalette("palettes/2C02G.pal");
-    
-    //emulator.loadCartridge("roms/horizscroll.nes");
-    //emulator.loadCartridge("roms/Zelda.NES");
-    //emulator.loadCartridge("roms/DonkeyKong.nes");
-    emulator.loadCartridge("roms/SuperMario.nes");
-    //emulator.loadCartridge("roms/nestest.nes");
-    //emulator.loadCartridge("roms/helloworld.nes");
-    //emulator.loadCartridge("roms/xyscroll.nes");
-    //emulator.loadCartridge("roms/scroll.nes");
-    //emulator.loadCartridge("roms/PacMan.nes");
-    //emulator.loadCartridge("roms/attributes.nes");
-    //emulator.loadCartridge("roms/sprites.nes");
-    //emulator.loadCartridge("roms/road.nes");
 
+    // Attempt to load the emulator color palette
+    int paletteErr = emulator.loadPalette(palettePath);
+    if (paletteErr != 0) {
+        std::cerr << "Failed to load color palette, error code: ";
+        std::cerr << paletteErr << std::endl;
+        return 3;
+    }
+    
+    // Attempt to load the game ROM
+    int cartErr = emulator.loadCartridge(romPath);
+    if (cartErr != 0){
+        std::cerr << "Failed to load game ROM, error code: ";
+        std::cerr << cartErr << std::endl;
+        return 4;
+    }
+
+    // Attach sdl components to the emulator
     emulator.attachIO(&sdlGamepad);
     display.attackFrameBuffer(emulator.getFrameBuffer());
 
@@ -112,7 +142,7 @@ int main (int argc, char *argv[]) {
         }
     }
 
-    std::cout << emulator.formatBusRange(0x0200, 0x02F0, 16) << std::endl;
+    std::cout << emulator.formatBusRange(0x0200, 0x02FF, 16) << std::endl;
 
     display.quit();
     SDL_Quit();

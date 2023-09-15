@@ -4,6 +4,7 @@ project(nes_emu)
 include_directories(include)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-Wall -Winline -g")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SOURCE_FILES 
     src/main.cpp

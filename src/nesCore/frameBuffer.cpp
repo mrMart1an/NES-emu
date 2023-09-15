@@ -22,10 +22,24 @@ FrameBuffer::~FrameBuffer() {
 }
 
 // Load frame palette from file
-void FrameBuffer::loadPalette(const std::string& filename) {
-    // Open the file and read a color buffer
-    std::ifstream file(filename, std::ios_base::binary);
+int FrameBuffer::loadPalette(const std::string& filename) {
+    // Open the file and read the palette content
+    std::ifstream file(filename, std::ifstream::ate | std::ios_base::binary);
 
+    // Check if the given palette file exist
+    // and if it has the right size
+    if (!file.good()) {
+        return 1;
+    }
+
+    int size = file.tellg();
+    file.seekg(0);
+
+    if (size != 192) {
+        return 2;
+    }
+
+    // Parse the palette file
     char color[3 * 64];
     file.read(color, 3 * 64);
 
@@ -35,6 +49,8 @@ void FrameBuffer::loadPalette(const std::string& filename) {
         color32bits = 0xFF | (color[(i*3) + 2] & 0xFF) << 8 | (color[(i*3) + 1] & 0xFF) << 8*2 | (color[(i*3) + 0] & 0xFF) << 8*3;
         mp_colorPalette[i] = color32bits;
     }
+
+    return 0;
 }
 
 // Get the raw data pointer

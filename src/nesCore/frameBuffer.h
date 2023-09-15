@@ -15,7 +15,9 @@ public:
     ~FrameBuffer();
     
     // Load palette from file
-    void loadPalette(const std::string& filename);
+    // Return 0 on success, 1 if the file doesn't exit
+    // and 2 if it has the wrong format
+    int loadPalette(const std::string& filename);
     
     // Get a pointer to the raw frame data
     uint32_t* data();

@@ -49,7 +49,7 @@ void NesEmulator::step() {
 }
 
 // Load a cartridge from a file
-void NesEmulator::loadCartridge(const std::string& filename) {
+int NesEmulator::loadCartridge(const std::string& filename) {
     std::cout << "Attempting to load cartridge" << std::endl;
 
     // Deallocate old cartridge if attach
@@ -61,12 +61,17 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     // open the file and read the header
     std::ifstream file(filename, std::ios_base::binary);
 
+    // Check if the given palette file exist
+    if (!file.good()) {
+        return 1;
+    }
+
     uint8_t header[16];
     file.read((char*)header, 16);
 
     // Check the header for a iNES file
     if (header[0] != 0x4E || header[1] != 0x45 || header[2] != 0x53 || header[3] != 0x1A)
-        return;
+        return 2;
 
     // Check for NES2 rom format and parse cartridge options
     bool NES2Format = (header[7] & 0x0C) == 0x08;
@@ -80,17 +85,15 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     uint8_t* chrRom = new uint8_t[8 * 1024 * cartOpt.chrBanksCount];
     file.read((char*)chrRom, 8 * 1024 * cartOpt.chrBanksCount);
 
-    // Print file format
+    // Print file information
     if (NES2Format)
         std::cout << "ROM format: NES 2.0" << std::endl;
     else
         std::cout << "ROM format: iNES" << std::endl;
 
-    // Print mapper
     std::cout << "Loading cartridge with mapper: ";
     std::cout << cartOpt.mapperId << std::endl;
 
-    // Print mirroring mode
     switch (cartOpt.mirroringMode) {
         case HORIZONTAL_MIRRORING:
             std::cout << "Mirroring: horizontal" << std::endl;
@@ -102,7 +105,7 @@ void NesEmulator::loadCartridge(const std::string& filename) {
 
         case FOUR_SCREEN:
             std::cout << "Mirroring: four screen(Not supported)" << std::endl;
-            return;
+            return 2;
     }
             
     // Generate the cartridge if supported
@@ -120,6 +123,7 @@ void NesEmulator::loadCartridge(const std::string& filename) {
         default:
             std::cout << "Mapper unsupported";
             std::cout << std::endl;
+            return 2;
     }
 
     // Close the file and return
@@ -130,6 +134,8 @@ void NesEmulator::loadCartridge(const std::string& filename) {
     m_ppuBus.attachCartriadge(mp_cartridge);
     m_cpuBus.cpu.reset();
     m_ppuBus.ppu.reset();
+
+    return 0;
 }
 
 // iNES file header parser
@@ -190,8 +196,8 @@ bool NesEmulator::frameReady() {
     return m_ppuBus.ppu.frameReady();
 }
 // Load the color palette from file
-void NesEmulator::loadPalette(const std::string& filename) {
-    m_frameBuffer.loadPalette(filename);
+int NesEmulator::loadPalette(const std::string& filename) {
+    return m_frameBuffer.loadPalette(filename);
 }
 
 /*
