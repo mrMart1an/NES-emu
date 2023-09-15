@@ -20,6 +20,9 @@ public:
     // Get the cartridge name table mirroring type
     virtual MirroringMode getMirroringMode() override;
 
+    // Handle reset signal
+    void reset() override;
+
 private:
     uint8_t* mp_prgRom;
     uint8_t* mp_prgRam;

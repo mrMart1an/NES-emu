@@ -48,6 +48,17 @@ void NesEmulator::step() {
     m_ppuInt = m_ppuBus.ppu.clock(cpuCycle);
 }
 
+// Reset the emulator
+void NesEmulator::reset() {
+    m_cpuBus.cpu.reset();
+    m_ppuBus.ppu.reset();
+
+    if (mp_cartridge != nullptr)
+        mp_cartridge->reset();
+
+    m_ppuInt = NOINT;
+}
+
 // Load a cartridge from a file
 int NesEmulator::loadCartridge(const std::string& filename) {
     std::cout << "Attempting to load cartridge" << std::endl;

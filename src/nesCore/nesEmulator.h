@@ -39,7 +39,12 @@ public:
 
     // Execute one CPU instruction
     void step();
+    
+    // Return true if the PPU finished a frame
     bool frameReady();
+
+    // Reset the emulator
+    void reset();
 
     // Debug info
     //
