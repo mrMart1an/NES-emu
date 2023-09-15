@@ -23,12 +23,16 @@ public:
     // Get a pointer to the emulator frame buffer
     FrameBuffer* getFrameBuffer();
     // Load a cartridge from a file
-    void loadCartridge(const std::string& filename);
+    // Return 0 on success, 1 if the file doesn't exit
+    // and 2 if it has the wrong format
+    int loadCartridge(const std::string& filename);
     // Attach an IO interface to the emulator
     void attachIO(IOInterface* interface);
 
     // Load the color palette from file
-    void loadPalette(const std::string& filename);
+    // Return 0 on success, 1 if the file doesn't exit
+    // and 2 if it has the wrong format
+    int loadPalette(const std::string& filename);
     // Parse file header for iNES and NES 2
     CartridgeOption iNESparse(uint8_t* header);
     CartridgeOption NES2parse(uint8_t* header);
