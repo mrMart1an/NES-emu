@@ -28,6 +28,11 @@ int main (int argc, char *argv[]) {
         .required()
         .help("specify the color palettes file");
 
+    argParser.add_argument("-w", "--windowed")
+        .implicit_value(true)
+        .default_value(false)
+        .help("start the emulator as a window");
+
     // Attempt to parse the arguments
     try {
         argParser.parse_args(argc, argv);
@@ -38,10 +43,12 @@ int main (int argc, char *argv[]) {
         return 1;
     }    
 
+    // Program options
     std::string romPath = argParser.get("romPath");
     std::string palettePath = argParser.get("palettes");
+    bool windowed = argParser.get<bool>("windowed");
 
-    // Init Sdl2 
+    // SDL2 initialization 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         std::cerr << "Failed to initialized SDL2" << std::endl;
         return 2;
@@ -50,9 +57,12 @@ int main (int argc, char *argv[]) {
     display::Sdl2Display display;
     display.init();
 
+    if (!windowed)
+        display.toggleFullscreen();
+
     input::Sdl2Input sdlGamepad;
 
-    // Init the emulator
+    // Emulator initialization
     nesCore::NesEmulator emulator = nesCore::NesEmulator();
 
     // Attempt to load the emulator color palette
@@ -83,16 +93,6 @@ int main (int argc, char *argv[]) {
         // Prepare a frame
         while (!emulator.frameReady() && emulate) {
             emulator.step();
-
-            if (false) {
-                nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
-
-                if (true || (info.cpuCycle >= 000 && info.cpuCycle <= 2000)) {
-                    std::cout << info.log() << " -- ";
-                    std::cout << emulator.decompileInstruction(info.pc) << std::endl;
-                }
-                //std::cout << infoPPU.log() << std::endl;
-            }
         }
     
         // Update the display

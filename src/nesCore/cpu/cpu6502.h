@@ -10,7 +10,7 @@
 
 namespace nesCore {
 namespace debug {
-class Cpu6502Debug;
+struct Cpu6502Debug;
 }
 class Bus;
 
