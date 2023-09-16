@@ -21,7 +21,6 @@ PPU::PPU(PpuBus* ppuBus) : mp_ppuBus(ppuBus), mp_frameBuffer(nullptr) {
 
     // Initialize the register
     m_ppuStatus = 0b10100000;
-    
 
     this->reset();
 }; 
@@ -538,7 +537,14 @@ Interrupt6502 PPU::clock(size_t cpuCycle) {
             spriteEvaluation();
             rendering();
             backgroundEvaluation();
-         }
+        } else {
+            // If rendering is disable the background 
+            // is used to fill the screen
+            if (m_scanLine < 240 && m_scanCycle > 0 && m_scanCycle < 257) {
+                uint8_t bgColor = mp_ppuBus->read(0x3F00);
+                mp_frameBuffer->setPixel(m_scanCycle - 1, m_scanLine, bgColor);
+            }
+        }
 
         // Post rendering scan line
         if (m_scanLine == 241 && m_scanCycle == 1) {

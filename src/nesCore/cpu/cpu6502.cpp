@@ -110,6 +110,7 @@ void Cpu6502::executeInterrupt(Interrupt6502 interrupt) {
         m_interruptDisable = true;
         m_pc = m_bus->read16(IRQ_BRK_VECTOR_ADDR);       
     } 
+
     if ((interrupt & NMI) != 0) {
         m_cpuCycle += 7;
 
@@ -135,9 +136,6 @@ size_t Cpu6502::step(Interrupt6502 interrupt) {
     // Read OP code from the buffer and increment the program counter
     uint8_t opCode = m_bus->read(m_pc);
     m_pc++;
-
-    //if (m_bus->read16(m_pc, true) == 0x4014)
-    //     m_cpuCycle += 514;
 
     // Execute instruction
     switch (opCode) {

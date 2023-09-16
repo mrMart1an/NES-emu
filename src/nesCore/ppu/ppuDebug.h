@@ -8,12 +8,11 @@ namespace nesCore {
 namespace debug {
 
 // Store the PPU debug info
-class PPUDebug {
-public:
+struct PPUDebug {
     // Return a summary of the PPU status in one line
     std::string log();
 
-public:
+    // PPU data
     uint64_t ppuCycles;
 
     uint16_t scanLine;

@@ -46,7 +46,11 @@ int FrameBuffer::loadPalette(const std::string& filename) {
     // Load the all palette
     uint32_t color32bits;
     for (int i = 0; i < 64; i++) {
-        color32bits = 0xFF | (color[(i*3) + 2] & 0xFF) << 8 | (color[(i*3) + 1] & 0xFF) << 8*2 | (color[(i*3) + 0] & 0xFF) << 8*3;
+        color32bits = 0xFF;
+        color32bits |= (color[(i*3) + 2] & 0xFF) << 8;
+        color32bits |= (color[(i*3) + 1] & 0xFF) << 8*2;
+        color32bits |= (color[(i*3) + 0] & 0xFF) << 8*3;
+
         mp_colorPalette[i] = color32bits;
     }
 
