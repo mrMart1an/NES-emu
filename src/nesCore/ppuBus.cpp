@@ -1,10 +1,8 @@
-#include "ppuBus.h"
+#include "../nesPch.h"
+
 #include "cartridge/cartridge.h"
+#include "ppuBus.h"
 #include "ppu/ppu.h"
-#include <cstdint>
-#include <ios>
-#include <iostream>
-#include <ostream>
 
 namespace nesCore {
 PpuBus::PpuBus() : ppu(this), cartridge(nullptr) {

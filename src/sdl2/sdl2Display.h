@@ -1,9 +1,13 @@
+#ifndef SDL2_DISPLAY_H_
+#define SDL2_DISPLAY_H_
+
+#include "../nesPch.h"
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_video.h>
-
-#include <cstdint>
+#include "glad/glad.h"
 
 #include "../nesCore/frameBuffer.h"
 
@@ -15,7 +19,11 @@ public:
 
     // Initialize the display
     // return 0 on success
-    int init(bool hideDangerZone = true);
+    int init(
+        bool hideDangerZone = true,
+        const std::string& vertexPath = "resources/shaders/shader.vert", 
+        const std::string& fragmentPath = "resources/shaders/shader.frag"
+    );
     // Display quit function
     void quit();
 
@@ -25,22 +33,52 @@ public:
     void resize();
 
     // Attach the frame buffer to the display
-    void attackFrameBuffer(nesCore::FrameBuffer* buffer);
+    void attachFrameBuffer(nesCore::FrameBuffer* buffer);
 
     // Toggle window full screen mode
     void toggleFullscreen();
 
 private:
-    // Raw RGBA frame buffer
-    uint32_t* mp_frameBuffer;
+    // Modify the display quad vertex coordinates
+    void updateQuad(
+        float topRX, float topRY,
+        float bottomLX, float bottomLY
+    );
 
+    // Load and compile the shaders
+    // Return 0 on success
+    int loadShaders(
+        const std::string& vertexPath, 
+        const std::string& fragmentPath
+    );
+
+private:
+    bool m_hideDangerZone;
+
+    // Raw RGBA frame buffer
+    uint8_t* mp_frameBuffer;
+
+    // SDL window pointer
     SDL_Window* mp_window;
 
-    SDL_Renderer *mp_renderer;
-    SDL_Texture *mp_texture;
+    // OpenGL rendering variable
+    SDL_GLContext m_glContext;
+    GLuint m_VAO, m_VBO, m_EBO;
+    GLuint m_glTexture;
+    GLuint m_shader;
 
-    SDL_Rect m_srcRect;
-    SDL_Rect m_destRect;
+    // Display quad vertices and indices
+    float m_quadVertices[16] = {
+        1.0f ,  1.0f, 1.0f, 1.0f,
+        1.0f , -1.0f, 1.0f, 0.0f,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f, 1.0f,
+    };
+    const unsigned int m_vertexIndices[6] = {      
+        0, 1, 3,       
+        1, 2, 3    
+    };  
 };
-
 }
+
+#endif

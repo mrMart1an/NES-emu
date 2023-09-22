@@ -1,3 +1,5 @@
+#include "../nesPch.h"
+
 #include "nesEmulator.h"
 #include "cartridge/cartridge.h"
 #include "cartridge/nromCartridge.h"
@@ -8,13 +10,6 @@
 #include "frameBuffer.h"
 #include "inputOutput/IOInterface.h"
 #include "ppu/ppuDebug.h"
-
-#include <algorithm>
-#include <csignal>
-#include <iostream>
-#include <cstdint>
-#include <fstream>
-#include <string>
 
 namespace nesCore {
 NesEmulator::NesEmulator() : m_cpuBus(), m_ppuBus(), mp_cartridge(nullptr) {

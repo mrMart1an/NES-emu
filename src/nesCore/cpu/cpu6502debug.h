@@ -1,9 +1,9 @@
 #ifndef CPU6502_DEBUG_H_
 #define CPU6502_DEBUG_H_
 
+#include "../../nesPch.h"
+
 #include "cpu6502.h"
-#include <cstdint>
-#include <string>
 
 namespace nesCore {
 namespace debug {

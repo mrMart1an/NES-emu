@@ -1,9 +1,8 @@
-#include <cstdint>
-#include <sstream>
-#include <string>
+#include "../../nesPch.h"
+
+#include "../utility/utilityFunctions.h"
 #include "cpu6502debug.h"
 #include "../cpuBus.h"
-#include "../utility/utilityFunctions.h"
 
 namespace nesCore {
 namespace debug {

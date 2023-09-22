@@ -1,5 +1,6 @@
+#include "../../nesPch.h"
+
 #include "dummyIO.h"
-#include <cstdint>
 
 namespace nesCore {
 // Do nothing in the read and write functions

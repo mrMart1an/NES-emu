@@ -1,13 +1,12 @@
 #ifndef BUS_H_
 #define BUS_H_
 
+#include "../nesPch.h"
+
 #include "cpu/cpu6502.h"
 #include "cartridge/cartridge.h"
 #include "inputOutput/IOInterface.h"
 #include "ppu/ppu.h"
-
-#include <cstdint>
-#include <string>
 
 namespace nesCore {
 // Nes cpu bus

@@ -1,8 +1,7 @@
 #ifndef CARTRIDGE_H_
 #define CARTRIDGE_H_
 
-#include <cstdint>
-#include <string>
+#include "../../nesPch.h"
 
 namespace nesCore {
 

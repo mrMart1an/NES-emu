@@ -1,6 +1,4 @@
-#include <string>
-#include <sstream>
-#include <iomanip>
+#include "../../nesPch.h"
 
 namespace nesCore {
 namespace utility {

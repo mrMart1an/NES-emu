@@ -1,16 +1,16 @@
 #ifndef NES_EMULATOR_H_
 #define NES_EMULATOR_H_
+#include "../nesPch.h"
 
-#include "cpu/cpu6502.h"
-#include "cpuBus.h"
 #include "cpu/cpu6502debug.h"
+#include "ppu/ppuDebug.h"
+
+#include "inputOutput/IOInterface.h"
 #include "cartridge/cartridge.h"
 #include "frameBuffer.h"
-#include "inputOutput/IOInterface.h"
-#include "ppu/ppuDebug.h"
+#include "cpu/cpu6502.h"
+#include "cpuBus.h"
 #include "ppuBus.h"
-#include <cstdint>
-#include <string>
 
 namespace nesCore {
 class NesEmulator {

@@ -1,8 +1,9 @@
 #ifndef NROM_CARTRIDGE_H_
 #define NROM_CARTRIDGE_H_
 
+#include "../../nesPch.h"
+
 #include "cartridge.h"
-#include <cstdint>
 
 namespace nesCore {
 class NromCartridge : public Cartridge {

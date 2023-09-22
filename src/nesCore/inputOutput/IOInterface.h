@@ -1,7 +1,7 @@
 #ifndef IO_INTERFACE_H_
 #define IO_INTERFACE_H_
 
-#include <cstdint>
+#include "../../nesPch.h"
 
 namespace nesCore {
 class IOInterface {

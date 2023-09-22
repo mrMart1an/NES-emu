@@ -1,5 +1,5 @@
-#include <sstream>
-#include <string>
+#include "../../nesPch.h"
+
 #include "ppuDebug.h"
 
 namespace nesCore {

@@ -1,9 +1,8 @@
 #ifndef FRAME_BUFFER_H_
 #define FRAME_BUFFER_H_
 
-#include <cstddef>
-#include <cstdint>
-#include <string>
+#include "../nesPch.h"
+
 namespace nesCore {
 
 const int SCREEN_WIDTH = 256;
@@ -20,7 +19,7 @@ public:
     int loadPalette(const std::string& filename);
     
     // Get a pointer to the raw frame data
-    uint32_t* data();
+    uint8_t* data();
 
     // Set a pixel value to the given color;
     // this function use the frame buffer color palette to 
@@ -29,10 +28,10 @@ public:
 
 private:
     // RGBA frame buffer
-    uint32_t* mp_frameData;
+    uint8_t* mp_frameData;
 
     // Color palette use to convert the NES
-    // output color to RGBA colors
+    // output color to RGB colors
     uint32_t mp_colorPalette[64];
 };
 }

@@ -1,9 +1,10 @@
 #ifndef SDL2_INPUT_H_
 #define SDL2_INPUT_H_
 
+#include "../nesPch.h"
+
 #include "../nesCore/inputOutput/IOInterface.h"
 #include <SDL2/SDL_events.h>
-#include <cstdint>
 
 namespace input {
 

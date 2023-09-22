@@ -1,10 +1,8 @@
+#include "../nesPch.h"
+
 #include "cpuBus.h"
 #include "cpu/cpu6502.h"
 #include "utility/utilityFunctions.h"
-#include <algorithm>
-#include <cstdint>
-#include <iostream>
-#include <sstream>
 
 namespace nesCore {
 // Initialize the bus and all the attached hardware

@@ -1,8 +1,9 @@
 #ifndef DUMMY_IO_H_
 #define DUMMY_IO_H_
 
+#include "../../nesPch.h"
+
 #include "IOInterface.h"
-#include <cstdint>
 
 namespace nesCore {
 class DummyIO: public IOInterface {

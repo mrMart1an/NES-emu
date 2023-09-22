@@ -1,9 +1,9 @@
 #ifndef PPUBUS_H_
 #define PPUBUS_H_
+#include "../nesPch.h"
 
 #include "cartridge/cartridge.h"
 #include "ppu/ppu.h"
-#include <cstdint>
 
 namespace nesCore {
 class PpuBus {
@@ -27,7 +27,6 @@ public:
     PPU ppu;
 
     uint8_t vram[2048];
-
     uint8_t palette[64];
 
     Cartridge* cartridge;
@@ -39,7 +38,6 @@ private:
     uint8_t* mp_nametableThree;
     uint8_t* mp_nametableFour;
 };
-    
 }
 
 #endif 
