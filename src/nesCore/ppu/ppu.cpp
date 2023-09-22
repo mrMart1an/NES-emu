@@ -1,11 +1,9 @@
-#include "ppu.h"
+#include "../../nesPch.h"
+
 #include "../utility/utilityFunctions.h"
-#include "../ppuBus.h"
 #include "ppuDebug.h"
-#include <algorithm>
-#include <cstdint>
-#include <ios>
-#include <iostream>
+#include "../ppuBus.h"
+#include "ppu.h"
 
 namespace nesCore {
 PPU::PPU(PpuBus* ppuBus) : mp_ppuBus(ppuBus), mp_frameBuffer(nullptr) {

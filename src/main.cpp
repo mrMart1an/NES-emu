@@ -1,18 +1,17 @@
+#include "nesPch.h"
+
 #include <argparse/argparse.hpp>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
-#include <SDL2/SDL_video.h>
-#include <SDL2/SDL.h>
-#include <iostream>
-#include <string>
 
+#include "nesCore/utility/utilityFunctions.h"
 #include "nesCore/inputOutput/IOInterface.h"
 #include "nesCore/nesEmulator.h"
 #include "nesCore/cpu/cpu6502.h"
-#include "nesCore/cpu/cpu6502debug.h"
 
+#include "nesCore/cpu/cpu6502debug.h"
 #include "nesCore/ppu/ppuDebug.h"
-#include "nesCore/utility/utilityFunctions.h"
+
 #include "sdl2/sdl2Display.h"
 #include "sdl2/sdl2Input.h"
 
@@ -24,7 +23,7 @@ int main (int argc, char *argv[]) {
         .help("specify the ROM file path");
 
     argParser.add_argument("-p", "--palettes")
-        .default_value(std::string("palettes/2C02G.pal"))
+        .default_value(std::string("resources/palettes/2C02G.pal"))
         .required()
         .help("specify the color palettes file");
 
@@ -55,7 +54,15 @@ int main (int argc, char *argv[]) {
     }
 
     display::Sdl2Display display;
-    display.init();
+    int success = display.init(
+        true,
+        "resources/shaders/shader.vert",
+        "resources/shaders/shader.frag"
+    );
+    if (success != 0) {
+        std::cerr << "Failed to initialized display" << std::endl;
+        return 3;
+    }
 
     if (!windowed)
         display.toggleFullscreen();
@@ -83,7 +90,7 @@ int main (int argc, char *argv[]) {
 
     // Attach sdl components to the emulator
     emulator.attachIO(&sdlGamepad);
-    display.attackFrameBuffer(emulator.getFrameBuffer());
+    display.attachFrameBuffer(emulator.getFrameBuffer());
 
     bool quit = false;
     bool emulate = true;
@@ -94,7 +101,7 @@ int main (int argc, char *argv[]) {
         while (!emulator.frameReady() && emulate) {
             emulator.step();
         }
-    
+
         // Update the display
         display.update();
     

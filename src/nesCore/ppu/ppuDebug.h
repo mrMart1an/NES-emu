@@ -1,8 +1,7 @@
 #ifndef PPU_DEBUG_H_
 #define PPU_DEBUG_H_
 
-#include <cstdint>
-#include <string>
+#include "../../nesPch.h"
 
 namespace nesCore {
 namespace debug {

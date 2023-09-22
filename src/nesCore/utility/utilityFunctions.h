@@ -1,7 +1,7 @@
 #ifndef NES_UTILITY_H_
 #define NES_UTILITY_H_
 
-#include <string>
+#include "../../nesPch.h"
 
 namespace nesCore {
 namespace utility {

@@ -1,10 +1,11 @@
-#include "sdl2Input.h"
+#include "../nesPch.h"
+
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_gamecontroller.h>
 #include <SDL2/SDL_joystick.h>
 #include <SDL2/SDL_keycode.h>
-#include <cstdint>
-#include <iostream>
+
+#include "sdl2Input.h"
 
 namespace input {
 // Initialize all value to 0

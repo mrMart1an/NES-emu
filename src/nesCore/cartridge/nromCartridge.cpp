@@ -1,8 +1,7 @@
-#include "nromCartridge.h"
+#include "../../nesPch.h"
+
 #include "cartridge.h"
-#include <algorithm>
-#include <cstdint>
-#include <iostream>
+#include "nromCartridge.h"
 
 namespace nesCore {
 // Take a pointer to the program ROM and the number of 16Kb memory banks in the ROM

@@ -1,9 +1,4 @@
-#include <algorithm>
-#include <cstdint>
-#include <ios>
-#include <iostream>
-#include <string>
-#include <fstream>
+#include "../nesPch.h"
 
 #include "frameBuffer.h"
 #include "utility/utilityFunctions.h"
@@ -11,7 +6,7 @@
 namespace nesCore {
 FrameBuffer::FrameBuffer() {
     // Construct the raw frame buffer
-    mp_frameData = new uint32_t[SCREEN_WIDTH * SCREEN_HEIGHT];
+    mp_frameData = new uint8_t[SCREEN_WIDTH * SCREEN_HEIGHT * 3];
     std::fill(mp_frameData, mp_frameData + (SCREEN_WIDTH * SCREEN_HEIGHT), 0);
 
     // Fill the color palette with white
@@ -28,16 +23,14 @@ int FrameBuffer::loadPalette(const std::string& filename) {
 
     // Check if the given palette file exist
     // and if it has the right size
-    if (!file.good()) {
+    if (!file.good()) 
         return 1;
-    }
 
     int size = file.tellg();
     file.seekg(0);
 
-    if (size != 192) {
+    if (size != 192) 
         return 2;
-    }
 
     // Parse the palette file
     char color[3 * 64];
@@ -58,14 +51,17 @@ int FrameBuffer::loadPalette(const std::string& filename) {
 }
 
 // Get the raw data pointer
-uint32_t* FrameBuffer::data() {
+uint8_t* FrameBuffer::data() {
     return mp_frameData;
 }
 
 // Set a pixel color
 void FrameBuffer::setPixel(size_t x, size_t y, uint8_t color) {
     size_t pixelAddress = (SCREEN_WIDTH * y) + x;
+    uint32_t rgbColor = mp_colorPalette[color & 0b00111111];
 
-    mp_frameData[pixelAddress] = mp_colorPalette[color & 0b00111111];
+    mp_frameData[pixelAddress * 3]     = (rgbColor & 0xFF000000) >> 8*3;
+    mp_frameData[pixelAddress * 3 + 1] = (rgbColor & 0x00FF0000) >> 8*2;
+    mp_frameData[pixelAddress * 3 + 2] = (rgbColor & 0x0000FF00) >> 8;
 }
 }
