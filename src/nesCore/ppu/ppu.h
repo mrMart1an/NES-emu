@@ -1,11 +1,11 @@
 #ifndef PPU_H_
 #define PPU_H_
 
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "ppuDebug.h"
-#include "../frameBuffer.h"
-#include "../cpu/cpu6502.h"
+#include "nesCore/frameBuffer.h"
+#include "nesCore/cpu/cpu6502.h"
 
 namespace nesCore {
 class PpuBus;

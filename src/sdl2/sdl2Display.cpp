@@ -1,4 +1,4 @@
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_mouse.h>
@@ -8,8 +8,8 @@
 #include <SDL2/SDL_video.h>
 #include "glad/glad.h"
 
+#include "nesCore/frameBuffer.h"
 #include "sdl2Display.h"
-#include "../nesCore/frameBuffer.h"
 
 namespace display {
 Sdl2Display::Sdl2Display()
@@ -17,6 +17,8 @@ Sdl2Display::Sdl2Display()
 
 int Sdl2Display::init(
     bool hideDangerZone,
+    bool windowed,
+    bool useVsync,
     const std::string& vertexPath, 
     const std::string& fragmentPath
 ) {
@@ -33,6 +35,10 @@ int Sdl2Display::init(
         std::cerr << "Failed to initialized SDL2 window" << std::endl;
         return 1;
     }
+
+    // Make the application fullscreen at startup
+    if (!windowed)
+        toggleFullscreen();
 
     // Create an openGL context
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -87,7 +93,7 @@ int Sdl2Display::init(
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     // Enable vsync and hide cursor
-    SDL_GL_SetSwapInterval(0);
+    SDL_GL_SetSwapInterval(useVsync);
     SDL_ShowCursor(SDL_DISABLE);
 
     // Initialized the destination and source rects
@@ -275,5 +281,9 @@ void Sdl2Display::quit() {
 void Sdl2Display::toggleFullscreen() {
     bool isFullscreen = SDL_GetWindowFlags(mp_window) & SDL_WINDOW_FULLSCREEN_DESKTOP;
     SDL_SetWindowFullscreen(mp_window, isFullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
+}
+void Sdl2Display::toggleVsync() {
+    bool isVsync = SDL_GL_GetSwapInterval();
+    SDL_GL_SetSwapInterval(!isVsync);
 }
 }

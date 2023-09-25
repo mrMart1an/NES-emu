@@ -1,7 +1,7 @@
 #ifndef FRAME_BUFFER_H_
 #define FRAME_BUFFER_H_
 
-#include "../nesPch.h"
+#include "nesPch.h"
 
 namespace nesCore {
 

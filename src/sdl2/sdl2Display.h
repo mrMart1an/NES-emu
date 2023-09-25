@@ -1,7 +1,7 @@
 #ifndef SDL2_DISPLAY_H_
 #define SDL2_DISPLAY_H_
 
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_rect.h>
@@ -9,7 +9,7 @@
 #include <SDL2/SDL_video.h>
 #include "glad/glad.h"
 
-#include "../nesCore/frameBuffer.h"
+#include "nesCore/frameBuffer.h"
 
 namespace display {
 
@@ -21,6 +21,8 @@ public:
     // return 0 on success
     int init(
         bool hideDangerZone = true,
+        bool windowed = false,
+        bool useVsync = true,
         const std::string& vertexPath = "resources/shaders/shader.vert", 
         const std::string& fragmentPath = "resources/shaders/shader.frag"
     );
@@ -37,6 +39,8 @@ public:
 
     // Toggle window full screen mode
     void toggleFullscreen();
+    // Toggle vsync
+    void toggleVsync();
 
 private:
     // Modify the display quad vertex coordinates

@@ -1,6 +1,6 @@
 #ifndef PPUBUS_H_
 #define PPUBUS_H_
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include "cartridge/cartridge.h"
 #include "ppu/ppu.h"
@@ -24,12 +24,12 @@ private:
 
 // Public member variables
 public:
-    PPU ppu;
+    PPU m_ppu;
 
-    uint8_t vram[2048];
-    uint8_t palette[64];
+    uint8_t mp_vram[2048];
+    uint8_t mp_palette[64];
 
-    Cartridge* cartridge;
+    Cartridge* mp_cartridge;
 
 private:
     // Name table pointers

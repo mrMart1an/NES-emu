@@ -1,7 +1,7 @@
 #ifndef NROM_CARTRIDGE_H_
 #define NROM_CARTRIDGE_H_
 
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "cartridge.h"
 

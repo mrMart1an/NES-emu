@@ -1,6 +1,6 @@
 #ifndef NES_EMULATOR_H_
 #define NES_EMULATOR_H_
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include "cpu/cpu6502debug.h"
 #include "ppu/ppuDebug.h"
@@ -20,12 +20,17 @@ public:
 
 // Public methods
 public:
+    // Setup the emulator, return 0 on success
+    int setup(
+        const std::string& startupRomPath,
+        const std::string& palettePath
+    );
+
     // Get a pointer to the emulator frame buffer
     FrameBuffer* getFrameBuffer();
     // Load a cartridge from a file
-    // Return 0 on success, 1 if the file doesn't exit
-    // and 2 if it has the wrong format
-    int loadCartridge(const std::string& filename);
+    // Return 0 on success, 1 on failure
+    int loadCartridgeFromFile(const std::string& filename);
     // Attach an IO interface to the emulator
     void attachIO(IOInterface* interface);
 
@@ -33,9 +38,6 @@ public:
     // Return 0 on success, 1 if the file doesn't exit
     // and 2 if it has the wrong format
     int loadPalette(const std::string& filename);
-    // Parse file header for iNES and NES 2
-    CartridgeOption iNESparse(uint8_t* header);
-    CartridgeOption NES2parse(uint8_t* header);
 
     // Execute one CPU instruction
     void step();

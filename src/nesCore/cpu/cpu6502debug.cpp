@@ -1,8 +1,8 @@
-#include "../../nesPch.h"
+#include "nesPch.h"
 
-#include "../utility/utilityFunctions.h"
+#include "nesCore/utility/utilityFunctions.h"
 #include "cpu6502debug.h"
-#include "../cpuBus.h"
+#include "nesCore/cpuBus.h"
 
 namespace nesCore {
 namespace debug {

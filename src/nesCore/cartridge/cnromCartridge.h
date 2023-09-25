@@ -1,6 +1,6 @@
 #ifndef CNROM_CARTRIDGE_H_
 #define CNROM_CARTRIDGE_H_
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "cartridge.h"
 

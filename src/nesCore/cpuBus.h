@@ -1,7 +1,7 @@
 #ifndef BUS_H_
 #define BUS_H_
 
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include "cpu/cpu6502.h"
 #include "cartridge/cartridge.h"
@@ -44,14 +44,14 @@ private:
 
 public:
     // NES 6502 based CPU 
-    Cpu6502 cpu;
+    Cpu6502 m_cpu;
     // NES PPU
-    PPU* ppu;
+    PPU* m_ppu;
     // NES RAM
-    uint8_t ram[2048];
+    uint8_t mp_ram[2048];
 
-    Cartridge* cartridge;
-    IOInterface* ioInterface;
+    Cartridge* mp_cartridge;
+    IOInterface* mp_ioInterface;
 
     bool m_dmaCycles;
 };
