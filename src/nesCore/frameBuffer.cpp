@@ -1,4 +1,4 @@
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include "frameBuffer.h"
 #include "utility/utilityFunctions.h"

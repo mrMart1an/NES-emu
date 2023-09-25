@@ -1,6 +1,5 @@
 #include "nesPch.h"
 
-#include <argparse/argparse.hpp>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 
@@ -15,126 +14,105 @@
 #include "sdl2/sdl2Display.h"
 #include "sdl2/sdl2Input.h"
 
-int main (int argc, char *argv[]) {
-    // Parse commands line arguments
-    argparse::ArgumentParser argParser("nes_emu");
+#include "argumentParser.h"
 
-    argParser.add_argument("romPath")
-        .help("specify the ROM file path");
-
-    argParser.add_argument("-p", "--palettes")
-        .default_value(std::string("resources/palettes/2C02G.pal"))
-        .required()
-        .help("specify the color palettes file");
-
-    argParser.add_argument("-w", "--windowed")
-        .implicit_value(true)
-        .default_value(false)
-        .help("start the emulator as a window");
-
-    // Attempt to parse the arguments
-    try {
-        argParser.parse_args(argc, argv);
-    }
-    catch (const std::runtime_error& err) {
-        std::cerr << err.what() << std::endl;
-        std::cerr << argParser;
-        return 1;
-    }    
-
-    // Program options
-    std::string romPath = argParser.get("romPath");
-    std::string palettePath = argParser.get("palettes");
-    bool windowed = argParser.get<bool>("windowed");
-
+int main(int argc, char *argv[]) {
     // SDL2 initialization 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
         std::cerr << "Failed to initialized SDL2" << std::endl;
         return 2;
     }
 
+    // Argument parsing
+    AppOptions options = parseArguments(argc, argv);
+ 
+    // Emulator initialization
+    nesCore::NesEmulator emulator = nesCore::NesEmulator();
+
+    // Setup the emulator
+    int emuSetupError = emulator.setup(
+        options.romPath, 
+        options.palettePath
+    );
+
+    if (emuSetupError != 0)
+        return emuSetupError;
+
+    // Setup display
     display::Sdl2Display display;
     int success = display.init(
-        true,
+        options.hideDangerZone,
+        options.windowed,
+        options.useVsync,
         "resources/shaders/shader.vert",
         "resources/shaders/shader.frag"
     );
+
     if (success != 0) {
         std::cerr << "Failed to initialized display" << std::endl;
         return 3;
     }
 
-    if (!windowed)
-        display.toggleFullscreen();
-
-    input::Sdl2Input sdlGamepad;
-
-    // Emulator initialization
-    nesCore::NesEmulator emulator = nesCore::NesEmulator();
-
-    // Attempt to load the emulator color palette
-    int paletteErr = emulator.loadPalette(palettePath);
-    if (paletteErr != 0) {
-        std::cerr << "Failed to load color palette, error code: ";
-        std::cerr << paletteErr << std::endl;
-        return 3;
-    }
-    
-    // Attempt to load the game ROM
-    int cartErr = emulator.loadCartridge(romPath);
-    if (cartErr != 0){
-        std::cerr << "Failed to load game ROM, error code: ";
-        std::cerr << cartErr << std::endl;
-        return 4;
-    }
-
-    // Attach sdl components to the emulator
-    emulator.attachIO(&sdlGamepad);
     display.attachFrameBuffer(emulator.getFrameBuffer());
 
+    // Input setup
+    input::Sdl2Input sdlGamepad;
+    emulator.attachIO(&sdlGamepad);
+
+    // Emulator main loop
     bool quit = false;
-    bool emulate = true;
+    bool runEmulation = true;
+
     SDL_Event event;
 
     while (!quit) {
         // Prepare a frame
-        while (!emulator.frameReady() && emulate) {
+        while (!emulator.frameReady() && runEmulation) {
             emulator.step();
         }
 
         // Update the display
         display.update();
     
-        // Handle event queue
-        while (SDL_PollEvent(&event) != 0) {
+        // Handle event in queue
+        while (SDL_PollEvent(&event)) {
+            // Set all event to the sdl gamepad implementation
             sdlGamepad.updateInput(&event);
 
-            // Handle quit event
-            if ( event.type == SDL_QUIT )
-                quit = true;
             // Handle resize event
-            if ( event.type == SDL_WINDOWEVENT ) {
-                switch ( event.window.event ) {
+            if (event.type == SDL_WINDOWEVENT) {
+                switch (event.window.event) {
                     case SDL_WINDOWEVENT_RESIZED:
                         display.resize();
                         break;
                 }
             }
 
-            // Toggle window fullscreen
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F11)
-                display.toggleFullscreen();
+            if (event.type == SDL_KEYDOWN) {
+                // Toggle window fullscreen
+                if (event.key.keysym.sym == SDLK_F11)
+                    display.toggleFullscreen();
 
-            // Reset the emulator
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F5)
-                emulator.reset();
+                // Toggle vsync 
+                if (event.key.keysym.sym == SDLK_F8)
+                    display.toggleVsync();
 
-            if ( event.type == SDL_KEYDOWN ) {
+                // Reset the emulator
+                if (event.key.keysym.sym == SDLK_F5)
+                    emulator.reset();
+    
                 if (event.key.keysym.sym == SDLK_p)
-                    emulate = !emulate;
+                    runEmulation = !runEmulation;
 
-                // Run one emulator step
-                if (event.key.keysym.sym == SDLK_t && !emulate) {
+                // Render one frame
+                if (event.key.keysym.sym == SDLK_f && !runEmulation) {
+                    while (!emulator.frameReady()) {
+                        emulator.step();
+                    }
+                }
+
+                // Run one emulator step and print debug info
+                if (event.key.keysym.sym == SDLK_t && !runEmulation) {
                     emulator.step();
 
                     nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
@@ -142,24 +120,16 @@ int main (int argc, char *argv[]) {
                     std::cout << info.log() << " -- ";
                     std::cout << emulator.decompileInstruction(info.pc) << std::endl;
                 }
-                // Render one frame
-                if (event.key.keysym.sym == SDLK_f && !emulate) {
-                     while (!emulator.frameReady()) {
-                        emulator.step();
-
-                        nesCore::debug::Cpu6502Debug info = emulator.cpuDebugInfo(); 
-
-                        std::cout << info.log() << " -- ";
-                        std::cout << emulator.decompileInstruction(info.pc) << std::endl;
-                     }
-                }
             }
+
+            // Handle quit event
+            if (event.type == SDL_QUIT)
+                quit = true;
         }
     }
 
-    std::cout << emulator.formatBusRange(0x0200, 0x02FF, 16) << std::endl;
-
     display.quit();
     SDL_Quit();
+
     return 0;
 }

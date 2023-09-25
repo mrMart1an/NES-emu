@@ -1,7 +1,7 @@
 #ifndef DUMMY_IO_H_
 #define DUMMY_IO_H_
 
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "IOInterface.h"
 

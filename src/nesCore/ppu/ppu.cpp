@@ -1,8 +1,8 @@
-#include "../../nesPch.h"
+#include "nesPch.h"
 
-#include "../utility/utilityFunctions.h"
+#include "nesCore/utility/utilityFunctions.h"
 #include "ppuDebug.h"
-#include "../ppuBus.h"
+#include "nesCore/ppuBus.h"
 #include "ppu.h"
 
 namespace nesCore {

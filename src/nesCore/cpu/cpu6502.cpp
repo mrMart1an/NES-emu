@@ -1,9 +1,9 @@
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "cpu6502debug.h"
-#include "../utility/utilityFunctions.h"
+#include "nesCore/utility/utilityFunctions.h"
 #include "cpu6502.h"
-#include "../cpuBus.h"
+#include "nesCore/cpuBus.h"
 
 namespace nesCore {
 // CPU constructor

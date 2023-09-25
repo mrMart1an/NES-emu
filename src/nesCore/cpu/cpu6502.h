@@ -1,7 +1,7 @@
 #ifndef CPU6502_H_
 #define CPU6502_H_
 
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #define RESET_VECTOR_ADDR 0xFFFC
 #define NMI_VECTOR_ADDR 0xFFFA

@@ -1,4 +1,4 @@
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 #include "cartridge.h"
 #include "cnromCartridge.h"

@@ -1,4 +1,4 @@
-#include "../nesPch.h"
+#include "nesPch.h"
 
 #include "cpuBus.h"
 #include "cpu/cpu6502.h"
@@ -6,9 +6,9 @@
 
 namespace nesCore {
 // Initialize the bus and all the attached hardware
-Bus::Bus() : cpu(Cpu6502(this)), ppu(nullptr), cartridge(nullptr), ioInterface(nullptr) {
+Bus::Bus() : m_cpu(Cpu6502(this)), m_ppu(nullptr), mp_cartridge(nullptr), mp_ioInterface(nullptr) {
     // Initializing RAM to zero
-    std::fill(ram, ram + sizeof(ram), 0x00);
+    std::fill(mp_ram, mp_ram + sizeof(mp_ram), 0x00);
     m_dmaCycles = false;
 }
 
@@ -22,36 +22,36 @@ bool Bus::dmaCycles() {
 
 // Attach a cartridge to the bus
 void Bus::attachCartriadge(Cartridge* cartridge) {
-    this->cartridge = cartridge;
+    this->mp_cartridge = cartridge;
 }
 // Attach ppu to the bus 
 void Bus::attachPpu(PPU* ppu) {
-    this->ppu = ppu;
+    this->m_ppu = ppu;
 }
 // Attach an IO interface to the bus
 void Bus::attachIO(IOInterface* interface) {
-    ioInterface = interface;
+    mp_ioInterface = interface;
 }
 
 // Read a byte from the bus at the given address
 uint8_t Bus::read(uint16_t addr, bool debugRead) {
     // RAM address range
     if (addr >= 0x0000 && addr <= 0x07FF) 
-        return ram[addr];
+        return mp_ram[addr];
 
     // PPU address range
-    if (addr >= 0x2000 && addr <= 0x3FFF && ppu != nullptr && !debugRead)
-        return ppu->readRegister(addr);
+    else if (addr >= 0x2000 && addr <= 0x3FFF && m_ppu != nullptr && !debugRead)
+        return m_ppu->readRegister(addr);
 
     // IO address range
-    if (addr == 0x4016 && ioInterface != nullptr && !debugRead)
-        return ioInterface->readInputOne();
-    if (addr == 0x4017 && ioInterface != nullptr && !debugRead)
-        return ioInterface->readInputTwo();
+    else if (addr == 0x4016 && mp_ioInterface != nullptr && !debugRead)
+        return mp_ioInterface->readInputOne();
+    else if (addr == 0x4017 && mp_ioInterface != nullptr && !debugRead)
+        return mp_ioInterface->readInputTwo();
 
     // PRG ROM address range
-    if (addr >= 0x6000 && addr <= 0xFFFF && cartridge != nullptr)
-        return cartridge->cpuRead(addr);
+    else if (addr >= 0x6000 && addr <= 0xFFFF && mp_cartridge != nullptr)
+        return mp_cartridge->cpuRead(addr);
     
     // If an invalid address is provide return 0
     return 0x00;
@@ -81,23 +81,23 @@ uint16_t Bus::read16PageWrap(uint16_t addr, bool debugRead) {
 void Bus::write(uint16_t addr, uint8_t data) {
     // RAM address range
     if (addr >= 0x0000 && addr <= 0x07FF) 
-        ram[addr] = data;
+        mp_ram[addr] = data;
     
     // PPU address range
-    if (addr >= 0x2000 && addr <= 0x3FFF && ppu != nullptr) 
-        ppu->writeRegister(addr, data);
+    else if (addr >= 0x2000 && addr <= 0x3FFF && m_ppu != nullptr) 
+        m_ppu->writeRegister(addr, data);
 
     // OAM DMA Write
-    if (addr == 0x4014 && ppu != nullptr)
+    else if (addr == 0x4014 && m_ppu != nullptr)
         OAMDMAtransfer(data);
 
     // IO address range
-    if (addr == 0x4016 && ioInterface != nullptr)
-        ioInterface->writeOutput(data);
+    else if (addr == 0x4016 && mp_ioInterface != nullptr)
+        mp_ioInterface->writeOutput(data);
 
     // PRG ROM address range
-    else if (addr >= 0x6000 && addr <= 0xFFFF && cartridge != nullptr)
-        cartridge->cpuWrite(addr, data);
+    else if (addr >= 0x6000 && addr <= 0xFFFF && mp_cartridge != nullptr)
+        mp_cartridge->cpuWrite(addr, data);
 }
 
 // Write a 16 bit integer to the bus in little endian format
@@ -123,7 +123,7 @@ void Bus::OAMDMAtransfer(uint8_t pageNumber) {
     m_dmaCycles = true;
 
     // Check if the PPU as being attached
-    if (ppu == nullptr)
+    if (m_ppu == nullptr)
         return;
 
     uint16_t pageAddr = static_cast<uint16_t>(pageNumber) << 8;

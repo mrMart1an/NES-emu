@@ -1,7 +1,7 @@
 #ifndef CARTRIDGE_H_
 #define CARTRIDGE_H_
 
-#include "../../nesPch.h"
+#include "nesPch.h"
 
 namespace nesCore {
 
@@ -44,7 +44,14 @@ public:
 
     // Get the cartridge name table mirroring type
     virtual MirroringMode getMirroringMode() = 0;
+
+    // Load a cartridge from a file
+    // Return a cartridge on success
+    // Nullptr on failure
+    static Cartridge* loadCartridgeFromFile(const std::string& filename);
 };
+
+
 }
 
 #endif
