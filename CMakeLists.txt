@@ -1,11 +1,10 @@
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.7)
 project(nes_emu)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_CXX_FLAGS "-Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_RELEASE "-Winline -O3")
 
 set(SOURCE_FILES 
@@ -45,9 +44,6 @@ set(EXTERN_SRC
     extern/glad/src/glad.c
 )
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(SDL2)
-
 # Include external library headers folders
 include_directories(extern/argparse/include)
 include_directories(extern/glad/include)
@@ -63,17 +59,18 @@ add_executable(nes_emu
     ${EXTERN_SRC}
 )
 
+# Dynamic linking to the SDL library
+find_package(SDL2 REQUIRED)
+target_link_libraries(nes_emu ${SDL2_LIBRARIES})
+
+# Use pre-compiled headers
+target_precompile_headers(nes_emu PRIVATE src/nesPch.h)
+
 # Output the binary in the binary folder
 set_target_properties(
     nes_emu PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
-
-# Dynamic linking to the SDL library
-target_link_libraries(nes_emu SDL2::Main)
-
-# Use pre-compiled headers
-target_precompile_headers(nes_emu PRIVATE src/nesPch.h)
 
 # Post build commands
 # Copy resources in build directory
