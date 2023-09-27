@@ -1,8 +1,6 @@
-
 # NES emu
 
 A NES emulator written in C++ for educational purpose.
-
 
 
 ## Build Linux
@@ -33,7 +31,6 @@ mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
 cmake --build .
 ```
-
     
 ## Usage
 
@@ -47,6 +44,7 @@ cmake --build .
 - [x]  PPU
 - [ ]  APU
 - [x]  SDL renderer
+- [ ]  Windows compatibility
 - [x]  Mapper 0
 - [ ]  Mapper 1
 - [x]  Mapper 2

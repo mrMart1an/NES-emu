@@ -1,9 +1,8 @@
 .cache/
 progress/
 roms/
-palettes/
-cmake/
 build/
+bin/*
 compile_commands.json
 run.sh
 runRelease.sh

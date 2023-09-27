@@ -11,6 +11,7 @@
 #include "cpu/cpu6502.h"
 #include "cpuBus.h"
 #include "ppuBus.h"
+#include <cstddef>
 
 namespace nesCore {
 class NesEmulator {
@@ -52,7 +53,7 @@ public:
     //
     // Return a sting with a formatted region of the bus
     // Take a memory range as input (both extreme are included)
-    std::string formatBusRange(uint16_t from, uint16_t to, uint width);
+    std::string formatBusRange(uint16_t from, uint16_t to, size_t width);
     // Decompile instruction
     std::string decompileInstruction(uint16_t addr);
     // Return CPU or PPU debug info
