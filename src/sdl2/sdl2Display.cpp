@@ -263,6 +263,11 @@ void Sdl2Display::update() {
     int width = nesCore::SCREEN_WIDTH;
     int height = m_hideDangerZone ? nesCore::SCREEN_HEIGHT - 16 : nesCore::SCREEN_HEIGHT;
 
+    // Clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+    glClear(GL_COLOR_BUFFER_BIT); 
+
+    // Draw the NES display on the quad
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, mp_frameBuffer);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

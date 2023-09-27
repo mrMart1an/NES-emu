@@ -139,7 +139,7 @@ void Bus::OAMDMAtransfer(uint8_t pageNumber) {
 }
 
 // Return a sting with a formatted region of the bus
-std::string Bus::formatRange(uint16_t from, uint16_t to, uint width) {
+std::string Bus::formatRange(uint16_t from, uint16_t to, size_t width) {
     std::stringstream s;
 
     for (int addr = from; addr <= to; addr++) {

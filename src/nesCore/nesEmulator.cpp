@@ -10,6 +10,7 @@
 #include "frameBuffer.h"
 #include "inputOutput/IOInterface.h"
 #include "ppu/ppuDebug.h"
+#include <cstddef>
 
 namespace nesCore {
 NesEmulator::NesEmulator() : m_cpuBus(), m_ppuBus(), mp_cartridge(nullptr) {
@@ -119,7 +120,7 @@ int NesEmulator::loadPalette(const std::string& filename) {
  */
 
 // Bus format range function
-std::string NesEmulator::formatBusRange(uint16_t from, uint16_t to, uint width) {
+std::string NesEmulator::formatBusRange(uint16_t from, uint16_t to, size_t width) {
     return m_cpuBus.formatRange(from, to, width);
 }
 // Decompile the instruction at the given address

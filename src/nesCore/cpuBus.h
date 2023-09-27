@@ -7,6 +7,7 @@
 #include "cartridge/cartridge.h"
 #include "inputOutput/IOInterface.h"
 #include "ppu/ppu.h"
+#include <cstddef>
 
 namespace nesCore {
 // Nes cpu bus
@@ -35,7 +36,7 @@ public:
 
     // Return a sting with a formatted region of the bus
     // Take a memory range as input (both extreme are included)
-    std::string formatRange(uint16_t from, uint16_t to, uint width);
+    std::string formatRange(uint16_t from, uint16_t to, size_t width);
 
 // Private methods
 private:
