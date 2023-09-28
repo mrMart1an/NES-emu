@@ -1,12 +1,14 @@
+#include "nesCore/apu/apu.h"
 #include "nesPch.h"
 
 #include "cpuBus.h"
 #include "cpu/cpu6502.h"
 #include "utility/utilityFunctions.h"
+#include <cstdint>
 
 namespace nesCore {
 // Initialize the bus and all the attached hardware
-Bus::Bus() : m_cpu(Cpu6502(this)), m_ppu(nullptr), mp_cartridge(nullptr), mp_ioInterface(nullptr) {
+Bus::Bus() : m_cpu(Cpu6502(this)), mp_ppu(nullptr), m_apu(APU()), mp_cartridge(nullptr), mp_ioInterface(nullptr) {
     // Initializing RAM to zero
     std::fill(mp_ram, mp_ram + sizeof(mp_ram), 0x00);
     m_dmaCycles = false;
@@ -26,7 +28,7 @@ void Bus::attachCartriadge(Cartridge* cartridge) {
 }
 // Attach ppu to the bus 
 void Bus::attachPpu(PPU* ppu) {
-    this->m_ppu = ppu;
+    this->mp_ppu = ppu;
 }
 // Attach an IO interface to the bus
 void Bus::attachIO(IOInterface* interface) {
@@ -40,8 +42,12 @@ uint8_t Bus::read(uint16_t addr, bool debugRead) {
         return mp_ram[addr];
 
     // PPU address range
-    else if (addr >= 0x2000 && addr <= 0x3FFF && m_ppu != nullptr && !debugRead)
-        return m_ppu->readRegister(addr);
+    else if (addr >= 0x2000 && addr <= 0x3FFF && mp_ppu != nullptr && !debugRead)
+        return mp_ppu->readRegister(addr);
+
+    // APU Register range (0x4014 excluded)
+    else if (addr >= 0x4000 && addr <= 0x4015 && !debugRead)
+        return m_apu.readRegister(addr);
 
     // IO address range
     else if (addr == 0x4016 && mp_ioInterface != nullptr && !debugRead)
@@ -84,12 +90,20 @@ void Bus::write(uint16_t addr, uint8_t data) {
         mp_ram[addr] = data;
     
     // PPU address range
-    else if (addr >= 0x2000 && addr <= 0x3FFF && m_ppu != nullptr) 
-        m_ppu->writeRegister(addr, data);
+    else if (addr >= 0x2000 && addr <= 0x3FFF && mp_ppu != nullptr) 
+        mp_ppu->writeRegister(addr, data);
+
+    // APU Register range 
+    else if (addr >= 0x4000 && addr <= 0x4013)
+        m_apu.writeRegister(addr, data);
 
     // OAM DMA Write
-    else if (addr == 0x4014 && m_ppu != nullptr)
+    else if (addr == 0x4014 && mp_ppu != nullptr)
         OAMDMAtransfer(data);
+
+    // APU Register range 
+    else if (addr == 0x4015 || addr == 0x4017)
+        m_apu.writeRegister(addr, data);
 
     // IO address range
     else if (addr == 0x4016 && mp_ioInterface != nullptr)
@@ -123,7 +137,7 @@ void Bus::OAMDMAtransfer(uint8_t pageNumber) {
     m_dmaCycles = true;
 
     // Check if the PPU as being attached
-    if (m_ppu == nullptr)
+    if (mp_ppu == nullptr)
         return;
 
     uint16_t pageAddr = static_cast<uint16_t>(pageNumber) << 8;
@@ -155,5 +169,4 @@ std::string Bus::formatRange(uint16_t from, uint16_t to, size_t width) {
     s << std::endl;
     return s.str();
 }
-
 }

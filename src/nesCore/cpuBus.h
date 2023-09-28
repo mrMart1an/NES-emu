@@ -7,7 +7,7 @@
 #include "cartridge/cartridge.h"
 #include "inputOutput/IOInterface.h"
 #include "ppu/ppu.h"
-#include <cstddef>
+#include "apu/apu.h"
 
 namespace nesCore {
 // Nes cpu bus
@@ -47,7 +47,9 @@ public:
     // NES 6502 based CPU 
     Cpu6502 m_cpu;
     // NES PPU
-    PPU* m_ppu;
+    PPU* mp_ppu;
+    // NES APU
+    APU m_apu;
     // NES RAM
     uint8_t mp_ram[2048];
 
