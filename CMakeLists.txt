@@ -72,6 +72,9 @@ set_target_properties(
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
 )
 
+# Create the bin directory during configuration
+file(MAKE_DIRECTORY DESTINATION bin)
+
 # Post build commands
 # Copy resources in build directory
 add_custom_command(
