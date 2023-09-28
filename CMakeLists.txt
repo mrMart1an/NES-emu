@@ -26,6 +26,7 @@ set(SOURCE_FILES_CORE
     src/nesCore/ppu/ppu.cpp
     src/nesCore/ppu/ppuDebug.cpp
 
+    src/nesCore/apu/apu.cpp
 
     src/nesCore/cartridge/cartridge.cpp
     src/nesCore/cartridge/nromCartridge.cpp
