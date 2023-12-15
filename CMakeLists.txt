@@ -37,6 +37,7 @@ set(SOURCE_FILES_CORE
 
 set(SOURCE_FILE_SDL2
     src/sdl2/sdl2Display.cpp    
+    src/sdl2/sdl2Audio.cpp
     src/sdl2/sdl2Input.cpp    
 )
 
