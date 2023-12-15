@@ -202,6 +202,10 @@ void Sdl2Display::updateQuad(
     m_quadVertices[3*4 + 0] = bottomLX;
     m_quadVertices[3*4 + 1] = topRY;
 
+    // Clear the screen
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+    glClear(GL_COLOR_BUFFER_BIT); 
+
     // Copy the new vertices in the buffers
     glBindBuffer(GL_ARRAY_BUFFER, m_VBO);  
     glBufferData(GL_ARRAY_BUFFER, sizeof(m_quadVertices), m_quadVertices, GL_STATIC_DRAW);
